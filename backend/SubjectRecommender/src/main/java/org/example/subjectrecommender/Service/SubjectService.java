@@ -1,0 +1,23 @@
+package org.example.subjectrecommender.Service;
+
+import org.example.subjectrecommender.Model.Subject;
+import org.example.subjectrecommender.Repository.SubjectRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class SubjectService {
+    SubjectRepository subjectRepository;
+    public SubjectService(SubjectRepository subjectRepository) {
+        this.subjectRepository = subjectRepository;
+    }
+    public void save(Subject subject) {
+        subjectRepository.save(subject);
+    }
+    public Subject getSubject(String id) {
+        return subjectRepository.findById(id).orElse(null); // Trả về null nếu không tồn tại
+    }
+
+
+
+}

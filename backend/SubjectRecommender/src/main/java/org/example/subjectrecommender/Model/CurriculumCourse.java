@@ -18,7 +18,9 @@ public class CurriculumCourse {
     private Subject subject;
     @Column(name = "semester")
     private int semester;//hoc ki mo
-    @Column(name = "require")
-    private int require;//co bat buoc khong , 0(no) 1(yes)
+    @Column(name = "year")
+    private int year;//năm mở môn
+    @Column(name = "required")
+    private int required;//co bat buoc khong , 0(no) 1(yes)
 
 }

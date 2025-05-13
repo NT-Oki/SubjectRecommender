@@ -14,7 +14,7 @@ public class SubjectGroupRequirement {
     @JoinColumn(name = "curriculum_version_id")
     private CurriculumVersion curriculumVersion;
     @ManyToOne
-    @JoinColumn(name = "subject_group_id)")
+    @JoinColumn(name = "subject_group_id")
     private SubjectGroup subjectGroup;
     @Column(name = "required_credit")
     private int requiredCredit;

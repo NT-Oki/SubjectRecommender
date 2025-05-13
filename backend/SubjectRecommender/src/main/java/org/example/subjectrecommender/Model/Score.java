@@ -23,7 +23,8 @@ public class Score {
     private float score;
     @Column(name = "passed")
     private int passed;//qua mon 0(no) 1(yes)
-
+    @Column(name = "year")
+    private int year;//nam da hoc mon nay
 
 
 }

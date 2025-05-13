@@ -1,10 +1,9 @@
 package org.example.subjectrecommender.Repository;
 
-import org.example.subjectrecommender.Model.User;
+import org.example.subjectrecommender.Model.CurriculumVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-
+public interface CurriculumVersionRepository extends JpaRepository<CurriculumVersion, String> {
 }
