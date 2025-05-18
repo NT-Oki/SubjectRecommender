@@ -14,7 +14,7 @@ public class SubjectService {
     public void save(Subject subject) {
         subjectRepository.save(subject);
     }
-    public Subject getSubject(String id) {
+    public Subject getSubjectById(String id) {
         return subjectRepository.findById(id).orElse(null); // Trả về null nếu không tồn tại
     }
 
