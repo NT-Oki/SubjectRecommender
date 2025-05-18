@@ -2,6 +2,7 @@ package org.example.subjectrecommender.Model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Data
@@ -25,6 +26,16 @@ public class Score {
     private int passed;//qua mon 0(no) 1(yes)
     @Column(name = "year")
     private int year;//nam da hoc mon nay
-
+    @Column(name = "utility")
+    private float utility;
+    @PrePersist
+    @PreUpdate
+    private void updateUtilityAutomatically() {
+        if(subject==null) {
+            this.utility=0;
+        }else{
+            this.utility=score*subject.getCredit();
+        }
+    }
 
 }

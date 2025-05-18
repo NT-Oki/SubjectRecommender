@@ -66,7 +66,7 @@ public class ImportData {
             s.setId(row.getCell(columnIndex.get("Mã môn học")).getStringCellValue().trim());
             s.setCredit((int)row.getCell(columnIndex.get("Số TC")).getNumericCellValue());
             s.setSubjectName(row.getCell(columnIndex.get("Tên môn học")).getStringCellValue());
-            if(group.equals("")||group==null){
+            if(group.isBlank()){
                 subjectGroup=subjectGroupService.getById("BB");
             }else{
                 subjectGroup=subjectGroupService.getById(group);
@@ -94,13 +94,13 @@ public class ImportData {
             Row row = sheet.getRow(i);
             if (row == null) continue;
             String mamonhoc=row.getCell(columnIndex.get("Mã môn học")).getStringCellValue().trim();
-            Subject s = subjectService.getSubject(mamonhoc);
+            Subject s = subjectService.getSubjectById(mamonhoc);
             String haveMonhoctruoc=row.getCell(columnIndex.get("Môn học trước")).getStringCellValue().trim();
             Prerequisite p = new Prerequisite();
             if(!haveMonhoctruoc.isBlank()){
                 String[] id_monhoctruoc=haveMonhoctruoc.split("\n");
                 for(String id:id_monhoctruoc){
-                    Subject subject_hoctruoc=subjectService.getSubject(id);
+                    Subject subject_hoctruoc=subjectService.getSubjectById(id);
                     p.setPrerequisiteSubject(subject_hoctruoc);
                     p.setSubject(s);
                     prerequisiteList.add(p);
@@ -129,7 +129,7 @@ public class ImportData {
             if (row == null) continue;
             CurriculumCourse curriculumCourse = new CurriculumCourse();
             String mamonhoc=row.getCell(columnIndex.get("Mã môn học")).getStringCellValue().trim();
-            Subject s = subjectService.getSubject(mamonhoc);
+            Subject s = subjectService.getSubjectById(mamonhoc);
             String ma_curriculumversion="7480201_2020";
             CurriculumVersion curriculumVersion=curriculumVersionService.getById(ma_curriculumversion);
             String is_required=row.getCell(columnIndex.get("BB")).getStringCellValue().trim();
@@ -192,7 +192,7 @@ public class ImportData {
             String mssv=row.getCell(columnIndex.get("Mã Sv")).getStringCellValue().trim();
             User user = userService.getByID(mssv);
             String ma_monhoc=row.getCell(columnIndex.get("Mã môn học")).getStringCellValue().trim();
-            Subject s = subjectService.getSubject(ma_monhoc);
+            Subject s = subjectService.getSubjectById(ma_monhoc);
             if(s==null) continue;
             float diem=(float)row.getCell(columnIndex.get("Điểm")).getNumericCellValue();
             int passed=diem<5.0?0:1;
@@ -213,5 +213,10 @@ public class ImportData {
         System.out.println("Đã thêm thành công vào scores: "+scores.size());
 
     }
+    public void importUtility(){
+        scoreService.updateAllUtility();
+    }
+
+
 
 }
