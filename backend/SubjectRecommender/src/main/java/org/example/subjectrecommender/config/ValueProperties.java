@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "value")
 @Data
 public class ValueProperties {
-    private String fileExport;
-    private String fileEFIM;
-    private int minUtility;
+   private String fileExport;
+   private String fileEFIM;
+   private int minUtility;
+   private String secret_key;
+   private int time_token;
 
 }

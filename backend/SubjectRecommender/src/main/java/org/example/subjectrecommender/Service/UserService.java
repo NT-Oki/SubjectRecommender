@@ -2,6 +2,7 @@ package org.example.subjectrecommender.Service;
 
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.UserRepository;
+import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,16 @@ public class UserService {
     }
     public User getByID(String id) {
         return userRepository.getReferenceById(id);
+    }
+    public boolean checkExists(String id) {
+         return userRepository.existsById(id);
+    }
+    public boolean login(String id, String password) {
+        if (checkExists(id)) {
+            User user = getByID(id);
+            return PasswordUtil.matchPassword(password, user.getPassword());
+        }
+        return false;
     }
 
 }
