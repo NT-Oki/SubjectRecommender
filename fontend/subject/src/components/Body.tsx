@@ -9,7 +9,29 @@ import { TbLogout } from "react-icons/tb";
 import { MdSettingsSuggest } from "react-icons/md";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCogs } from '@fortawesome/free-solid-svg-icons'
+import axios from 'axios';
+import { useEffect } from "react";
+import API_ENDPOINTS from "../config/apiConfig";
 const Body = () => {
+    useEffect(() => {
+    const fetchUserScore = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        const res = await axios.get(API_ENDPOINTS.SCORE, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Score:", res.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin điểm user:", error);
+      }
+    };
+
+    fetchUserScore();
+  }, []);
+
     return (
         // body--------------------------------------
         <Box

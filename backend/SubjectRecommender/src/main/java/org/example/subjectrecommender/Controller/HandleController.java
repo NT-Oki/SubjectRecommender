@@ -7,6 +7,8 @@ import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.config.ValueProperties;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,9 +48,10 @@ public class HandleController {
 
     }
     @PostMapping("/recomend")
-    public ResponseEntity<List<Subject>> recomendSubject(@RequestParam String userID, @RequestParam int semester) throws IOException {
-
-      //  mainService.readAndSaveItemsets("D:\\7.Test\\tieuluan\\al.txt");
+    public ResponseEntity<List<Subject>> recomendSubject( @RequestParam int semester) throws IOException {
+        // Lấy userID từ token (SecurityContext)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userID = (String) auth.getPrincipal();
         User user=userService.getByID(userID);
         List<Subject> sugest=mainService.suggestSubjectsForUser(user,semester);
         for(Subject subject:sugest){
