@@ -12,7 +12,7 @@
                 sx={{
                     backgroundColor:"#3EBE30",
                     width:"100vw",
-                    height:"130px",
+                    height:"120px",
                     position:"fixed",
                     top: 0, 
                     display:"flex",

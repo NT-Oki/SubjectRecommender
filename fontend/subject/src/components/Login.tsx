@@ -26,14 +26,19 @@ const Login = () => {
             });
 
             const token = response.data.token;
+            const userId = response.data.userId;
             sessionStorage.setItem("token", token);
+            sessionStorage.setItem("userId", userId);
 
             alert("Đăng nhập thành công!");
             // Ví dụ chuyển trang
-           navigate("/home")
-        } catch (error) {
-            alert("Sai tài khoản hoặc mật khẩu!");
-            console.error(error);
+            navigate("/home")
+        } catch (error: any) {
+            if (axios.isAxiosError(error)) {
+               alert(error.response?.data);
+            } else {
+                alert(error);
+            }
         }
     };
 
@@ -48,16 +53,17 @@ const Login = () => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-
+                position:"fixed",
+                top:"52px",
             }}
 
         >
             <Box
                 sx={{
-                    marginTop: "75px",
-                    marginRight:"80px",
-                    width: "1300px",
-                    height: "600px",
+                    marginTop: "85px",
+                    marginRight: "30px",
+                    width: "1100px",
+                    height: "500px",
                     backgroundImage: `url(${nonglam})`, // đường dẫn tương đối hoặc tuyệt đối
                     backgroundSize: "cover", // để ảnh phủ đầy Box
                     backgroundPosition: "center", // căn giữa ảnh
@@ -67,15 +73,11 @@ const Login = () => {
             </Box>
             <Box
                 sx={{
-                    width: "478px",
-                    height: "343px",
+                    width: "400px",
+                    height: "320px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "flex-start",
-                    // position: "fixed",
-                    // top: "50%",
-                    // left: "50%",
-                    // transform: "translate(-50%, -50%)",
                     flexDirection: "column"
 
                 }}

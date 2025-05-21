@@ -18,21 +18,14 @@ import java.util.List;
 
 @RestController
 public class HandleController {
-    ScoreService scoreService;
     MainService mainService;
     UserService userService;
     ValueProperties valueProperties;
-    public HandleController(ScoreService scoreService,MainService mainService, UserService userService
+    public HandleController(MainService mainService, UserService userService
     , ValueProperties valueProperties) {
-        this.scoreService = scoreService;
         this.mainService = mainService;
         this.userService = userService;
         this.valueProperties = valueProperties;
-    }
-    @PostMapping("/export")
-    public void export() throws IOException {
-        scoreService.exportTransactionFile("D:\\7.Test\\tieuluan\\export.txt");
-
     }
     @PostMapping("/algo")
     public void algo() throws IOException {
