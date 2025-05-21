@@ -1,5 +1,6 @@
 package org.example.subjectrecommender.config;
 
+import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.util.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,20 +16,21 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ScoreService scoreService) throws Exception {
 //        http
 //                .authorizeHttpRequests(auth -> auth
 //                        .anyRequest().permitAll() // Cho phép mọi request
 //                )
 //                .formLogin(form -> form.disable())
 //                .httpBasic(httpBasic -> httpBasic.disable())
-//                .csrf(csrf -> csrf.disable()); // ✅ Cách mới để disable CSRF
+//                .csrf(csrf -> csrf.disable());
 //
 //        return http.build();
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> {} )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

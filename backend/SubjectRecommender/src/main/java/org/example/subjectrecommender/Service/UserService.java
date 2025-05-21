@@ -1,7 +1,9 @@
 package org.example.subjectrecommender.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.UserRepository;
+import org.example.subjectrecommender.dto.UserDTO;
 import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,11 @@ public class UserService {
             return PasswordUtil.matchPassword(password, user.getPassword());
         }
         return false;
+    }
+    public UserDTO getUserDTO(String id) {
+        return new UserDTO(userRepository.findById(id)
+                .orElseThrow(()->new EntityNotFoundException("không tìm thấy user "+id)));
+
     }
 
 }

@@ -5,12 +5,15 @@ import org.example.subjectrecommender.util.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     private final UserService userService;
@@ -28,7 +31,10 @@ public class AuthController {
             // Tạo token duy nhất với thời gian sống định nghĩa trong JwtUtil
             String token = jwtUtil.generateToken(userID);
             // Trả token về client
-            return ResponseEntity.ok(Collections.singletonMap("token", token));
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "userId",userID
+            ));
         } else {
             // Đăng nhập sai trả về lỗi 401
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mật khẩu chưa đúng");
@@ -39,4 +45,5 @@ public class AuthController {
         // Không cần làm gì ở server nếu không lưu token
         return ResponseEntity.ok("Logged out");
     }
+
 }
