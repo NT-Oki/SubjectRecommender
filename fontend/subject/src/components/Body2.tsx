@@ -6,7 +6,6 @@ import "@fontsource/noto-sans/latin.css"
 import { GiTwirlyFlower } from "react-icons/gi";
 import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
-import { MdSettingsSuggest } from "react-icons/md";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCogs } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios';

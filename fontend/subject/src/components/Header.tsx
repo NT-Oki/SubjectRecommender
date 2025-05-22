@@ -1,4 +1,4 @@
-        import { Box, Container, Typography } from "@mui/material"
+        import { Box, Typography } from "@mui/material"
         import "@fontsource/roboto-serif/latin.css"
         import "@fontsource/roboto/latin.css"
         import "@fontsource/open-sans/latin.css"

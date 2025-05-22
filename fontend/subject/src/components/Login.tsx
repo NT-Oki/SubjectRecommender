@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import {  useState } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "../config/apiConfig";
 import { Box, Button, Input, Typography, InputAdornment, IconButton } from "@mui/material"
@@ -42,10 +42,6 @@ const Login = () => {
         }
     };
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        await handleLogin(userID, password);
-    };
 
     return (
         <Box

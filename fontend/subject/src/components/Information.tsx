@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Button, Typography } from "@mui/material"
 import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
@@ -7,7 +6,7 @@ import { faCogs, faCircleExclamation, faXmark} from '@fortawesome/free-solid-svg
 
 import API_ENDPOINTS from "../config/apiConfig";
 import axios from 'axios';
-import { Fragment, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Information = () => {

@@ -9,6 +9,7 @@ const API_ENDPOINTS = {
   LOGOUT: `${AUTH_URL}/logout`,
   SCORE: `${API_URL}/listScore`,
   INFO: `${API_URL}/info`,
+  RECOMMEND: `${API_URL}/recommend`,
 };
 
 export default API_ENDPOINTS;

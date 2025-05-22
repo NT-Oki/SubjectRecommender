@@ -1,30 +1,13 @@
-import { Box, Button, Typography } from "@mui/material"
+import { Box, Typography } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
 import { GiTwirlyFlower } from "react-icons/gi";
-import { FaUser } from "react-icons/fa";
-import { TbLogout } from "react-icons/tb";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCogs } from '@fortawesome/free-solid-svg-icons'
-import axios from 'axios';
-import { Fragment, useEffect, useState } from "react";
-import API_ENDPOINTS from "../config/apiConfig";
 import ListScore from "./ListScore"
 import Information from "./Information"
-import { useNavigate } from "react-router-dom"
 const Body = () => {
-  const [hasToken, setHasToken] = useState(!!sessionStorage.getItem("token"));
-  const navigate=useNavigate();
-    const logout = () => {
-        sessionStorage.removeItem("token");
-        navigate("/");
-    }
     return (
-      
-        
- 
         // body--------------------------------------
         <Box
             sx={{
