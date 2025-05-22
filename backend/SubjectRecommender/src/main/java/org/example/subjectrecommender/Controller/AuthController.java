@@ -45,5 +45,46 @@ public class AuthController {
         // Không cần làm gì ở server nếu không lưu token
         return ResponseEntity.ok("Logged out");
     }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassWord(@RequestBody PasswordChangeDTO passwordChangeDTO) {
+        if(userService.changePassWord(passwordChangeDTO.getUserId(), passwordChangeDTO.getNewpassword())){
+            return ResponseEntity.ok("Thay đổi mật khẩu thành công cho user "+passwordChangeDTO.getUserId());
+        }else{
+            return ResponseEntity.badRequest().body("Thay đổi mật khẩu thất bại cho user "+passwordChangeDTO.getUserId());
+        }
+
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody PasswordForgotDTO dto) {
+        User userOpt = userService.getByID(dto.getUserId());
+//        if (userOpt==null || !userOpt.getEmail().equals(dto.getEmail())) {
+        if (userOpt==null ) {
+            return ResponseEntity.badRequest().body("Không tìm thấy sinh viên");
+        }
+
+        String token = UUID.randomUUID().toString();
+        resetTokenRepository.save(new ResetToken(dto.getUserId(), token, LocalDateTime.now().plusMinutes(30)));
+
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        emailService.sendResetPasswordEmail(dto.getEmail(), resetLink);
+
+        return ResponseEntity.ok("Email đặt lại mật khẩu đã được gửi.");
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO dto) {
+        ResetToken tokenData = resetTokenRepository.findByToken(dto.getToken());
+        if (tokenData == null || tokenData.getExpiryTime().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Token không hợp lệ hoặc đã hết hạn");
+        }
+
+        User user = userRepository.findById(tokenData.getUserId()).orElseThrow();
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+
+        resetTokenRepository.delete(tokenData);
+
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
+    }
+
 
 }

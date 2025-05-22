@@ -35,4 +35,9 @@ public class UserService {
 
     }
 
+    public boolean changePassWord(String userID, String newpassword) {
+        String newPass=PasswordUtil.hashPassword(newpassword);
+        System.out.println(newPass);
+        return userRepository.updatePasswordById(userID, newPass)>0;
+    }
 }

@@ -6,17 +6,18 @@ import org.example.subjectrecommender.Service.MainService;
 import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.config.ValueProperties;
+import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@RequestMapping("/handle")
 public class HandleController {
     MainService mainService;
     UserService userService;
@@ -40,17 +41,14 @@ public class HandleController {
         System.out.println("Hoàn thành lưu HUitemset vào cơ sở dữ liệu");
 
     }
-    @PostMapping("/recomend")
-    public ResponseEntity<List<Subject>> recomendSubject( @RequestParam int semester) throws IOException {
-        // Lấy userID từ token (SecurityContext)
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userID = (String) auth.getPrincipal();
-        User user=userService.getByID(userID);
-        List<Subject> sugest=mainService.suggestSubjectsForUser(user,semester);
-        for(Subject subject:sugest){
-            System.out.println(subject);
+    @GetMapping("/recommend")
+    public ResponseEntity<List<SubjectRecommendDTO>> recomendSubject(@RequestParam int semester, @RequestParam String userId) throws IOException {
+        User user=userService.getByID(userId);
+        List<SubjectRecommendDTO> result=mainService.suggestSubjectsForUser(user,semester);
+        if(result.size()>10){
+            result=result.subList(0,10);
         }
-        System.out.println("Số lượng môn học gợi ý: "+sugest.size());
-       return ResponseEntity.ok().body(sugest);
+        System.out.println("Số lượng môn học gợi ý: "+result.size());
+       return ResponseEntity.ok().body(result);
     }
 }
