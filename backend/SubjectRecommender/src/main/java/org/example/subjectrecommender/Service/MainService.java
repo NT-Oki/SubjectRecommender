@@ -4,6 +4,7 @@ import ca.pfv.spmf.algorithms.frequentpatterns.efim.AlgoEFIM;
 import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Repository.*;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -16,19 +17,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class MainService {
+    @Autowired
     ScoreRepository scoreRepository;
+    @Autowired
     SubjectRepository subjectRepository;
+    @Autowired
     HUItemsetRepository HUItemsetRepository;
+    @Autowired
     PrerequisiteRepository prerequisiteRepository;
+    @Autowired
     CurriculumCourseRepository curriculumCourseRepository;
-    public MainService(ScoreRepository scoreRepository, SubjectRepository subjectRepository, HUItemsetRepository HUItemsetRepository,
-     PrerequisiteRepository prerequisiteRepository, CurriculumCourseRepository curriculumCourseRepository) {
-        this.scoreRepository = scoreRepository;
-        this.subjectRepository = subjectRepository;
-        this.HUItemsetRepository = HUItemsetRepository;
-        this.prerequisiteRepository = prerequisiteRepository;
-        this.curriculumCourseRepository = curriculumCourseRepository;
-    }
+
     //1
     public void exportTransactionFile(String outputPath) throws IOException {
         List<Score> scores = scoreRepository.findAll();

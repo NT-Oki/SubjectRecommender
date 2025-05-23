@@ -7,6 +7,7 @@ import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,15 +20,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/handle")
 public class HandleController {
+    @Autowired
     MainService mainService;
+    @Autowired
     UserService userService;
+    @Autowired
     ValueProperties valueProperties;
-    public HandleController(MainService mainService, UserService userService
-    , ValueProperties valueProperties) {
-        this.mainService = mainService;
-        this.userService = userService;
-        this.valueProperties = valueProperties;
-    }
+
     @PostMapping("/algo")
     public void algo() throws IOException {
         String fileExport=valueProperties.getFileExport();

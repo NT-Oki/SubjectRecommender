@@ -27,12 +27,14 @@ const Login = () => {
 
             const token = response.data.token;
             const userId = response.data.userId;
+            const exp = response.data.exp;
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("userId", userId);
+            sessionStorage.setItem("exp", exp);
 
             alert("Đăng nhập thành công!");
             // Ví dụ chuyển trang
-            navigate("/home")
+            navigate("/home/listscore")
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                alert(error.response?.data);

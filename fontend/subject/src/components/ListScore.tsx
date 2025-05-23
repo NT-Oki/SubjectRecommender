@@ -3,6 +3,7 @@ import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
+import { GiTwirlyFlower } from "react-icons/gi";
 import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
@@ -60,7 +61,91 @@ const ListScore = () => {
 
     return (
         // body--------------------------------------
-<>
+
+ <>
+                <Box
+                    sx={{
+                        backgroundColor: "#3EBE30",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "30px",
+                        height: "24px",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 12,
+                    }}
+                >
+                    <GiTwirlyFlower />
+                    <Typography
+                        sx={{
+
+                            fontFamily: "sans-serif",
+                            fontSize: "16px",
+                            fontWeight: "bold",
+                            color: "white",
+                            paddingLeft: "5px"
+                        }}
+                    >
+                        CHƯƠNG TRÌNH ĐÀO TẠO
+                    </Typography>
+                </Box>
+                <Box
+                    sx={{
+                        backgroundColor: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "30px",
+                        height: "15px",
+                        position: "sticky",
+                        top: 24,
+                        zIndex: 11,
+                    }}
+                >
+
+
+                </Box>
+
+                <Box
+                    sx={{
+                        backgroundColor: "#FFA500",
+                        display: "flex",
+                        alignItems: "center",
+                        paddingLeft: "30px",
+                        height: "35px",
+                        position: "sticky",
+                        top: 39,
+                        zIndex: 10
+                        ,
+
+                        "& > *:not(:last-child)": {
+                            borderRight: "1px solid white",
+
+                        },
+                        "& > *": {
+                            margin: "auto",
+                            fontFamily: "sans-serif",
+                            fontSize: "16px",
+                            fontWeight: "bold",
+                            color: "white",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+
+                        },
+                    }}
+                >
+                    <Typography flex={0.2}>STT</Typography>
+                    <Typography flex={1}>Mã MH</Typography>
+                    <Typography flex={2}>Tên môn học</Typography>
+                    <Typography flex={0.5}>Số tín chỉ</Typography>
+                    <Typography flex={1}>Môn tiên quyết</Typography>
+                    <Typography flex={0.6}>Môn bắt buộc</Typography>
+                    <Typography flex={0.4}>Đã học</Typography>
+                    <Typography flex={1}>Điểm</Typography>
+
+                </Box>
+                {/* ///////// */}
 
                 {data ? Object.entries(data).map(([key, scoreList]) => (
 
@@ -122,14 +207,15 @@ const ListScore = () => {
 
                                 >
                                     {score.subject.subjectGroup.id == "BB" ? "x" : ""}</Typography>
-                                <Typography flex={1}>{score.score}</Typography>
                                 <Typography flex={0.4}>{score.passed == 1 ? "✔" : "x"}</Typography>
+                                <Typography flex={1}>{score.score}</Typography>
+
                             </Box>
                         ))}
                     </Fragment>
                 )) : null}
 
-</>
+          </>
            
         //    end Body---------------------------------
     )

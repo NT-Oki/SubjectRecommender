@@ -5,6 +5,7 @@ import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
 import org.example.subjectrecommender.dto.UserDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,13 +20,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class APIController {
+    @Autowired
     ScoreService scoreService;
+    @Autowired
     UserService userService;
-    public APIController(ScoreService scoreService, UserService userService) {
-        this.scoreService = scoreService;
-        this.userService = userService;
-
-    }
 
     @GetMapping("/listScore")
     public ResponseEntity<Map<String, List<ScoreResponseDTO>>> listScore(@RequestParam String userId) {

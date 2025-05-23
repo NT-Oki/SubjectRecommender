@@ -59,13 +59,7 @@ const RecommendList = () => {
     navigate("/home/listscore")
   }
   return (
-    <Box
-      sx={{
-        width: "84%",
-        height: "500px",
-        overflowY: "auto",
-      }}
-    >
+   <>
       {/* Header chương trình đào tạo */}
       <Box
         sx={{
@@ -209,7 +203,7 @@ const RecommendList = () => {
           Không có gợi ý nào.
         </Typography>
       )}
-    </Box>
+   </>
   );
 };
 

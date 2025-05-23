@@ -5,14 +5,14 @@ import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.UserRepository;
 import org.example.subjectrecommender.dto.UserDTO;
 import org.example.subjectrecommender.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+    @Autowired
     UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+
     public void save(User user) {
         userRepository.save(user);
     }
