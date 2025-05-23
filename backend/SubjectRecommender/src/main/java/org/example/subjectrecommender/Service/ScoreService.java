@@ -6,6 +6,7 @@ import org.example.subjectrecommender.Model.Subject;
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.ScoreRepository;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -19,10 +20,8 @@ import java.util.stream.Collectors;
 
     @Service
     public class ScoreService {
+        @Autowired
         ScoreRepository scoreRepository;
-        public ScoreService(ScoreRepository scoreRepository) {
-            this.scoreRepository = scoreRepository;
-        }
         public void save (Score score) {
             scoreRepository.save(score);
         }

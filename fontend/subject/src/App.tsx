@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import Login from './components/Login'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Body from './components/Body'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
 
@@ -15,7 +16,11 @@ function App() {
        
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Body/>} />
+        <Route path="/home/*" element={
+          <ProtectedRoute>
+          <Body/>
+          </ProtectedRoute>
+        }/>
       </Routes>
        <Footer></Footer>
        </Router>

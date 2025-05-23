@@ -2,6 +2,7 @@
 const BASE_URL = "http://localhost:8080";
 const API_URL = `${BASE_URL}/api`;
 const AUTH_URL = `${BASE_URL}/auth`;
+const HANDLE_URL = `${BASE_URL}/handle`;
 
 const API_ENDPOINTS = {
   USER_INFO: `${API_URL}/user-info`,
@@ -9,7 +10,7 @@ const API_ENDPOINTS = {
   LOGOUT: `${AUTH_URL}/logout`,
   SCORE: `${API_URL}/listScore`,
   INFO: `${API_URL}/info`,
-  RECOMMEND: `${API_URL}/recommend`,
+  RECOMMEND: `${HANDLE_URL}/recommend`,
 };
 
 export default API_ENDPOINTS;

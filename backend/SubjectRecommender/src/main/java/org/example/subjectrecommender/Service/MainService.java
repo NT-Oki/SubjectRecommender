@@ -3,6 +3,8 @@ package org.example.subjectrecommender.Service;
 import ca.pfv.spmf.algorithms.frequentpatterns.efim.AlgoEFIM;
 import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Repository.*;
+import org.example.subjectrecommender.dto.SubjectRecommendDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -15,19 +17,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class MainService {
+    @Autowired
     ScoreRepository scoreRepository;
+    @Autowired
     SubjectRepository subjectRepository;
+    @Autowired
     HUItemsetRepository HUItemsetRepository;
+    @Autowired
     PrerequisiteRepository prerequisiteRepository;
+    @Autowired
     CurriculumCourseRepository curriculumCourseRepository;
-    public MainService(ScoreRepository scoreRepository, SubjectRepository subjectRepository, HUItemsetRepository HUItemsetRepository,
-     PrerequisiteRepository prerequisiteRepository, CurriculumCourseRepository curriculumCourseRepository) {
-        this.scoreRepository = scoreRepository;
-        this.subjectRepository = subjectRepository;
-        this.HUItemsetRepository = HUItemsetRepository;
-        this.prerequisiteRepository = prerequisiteRepository;
-        this.curriculumCourseRepository = curriculumCourseRepository;
-    }
+
     //1
     public void exportTransactionFile(String outputPath) throws IOException {
         List<Score> scores = scoreRepository.findAll();
@@ -128,7 +128,7 @@ public class MainService {
         return true;
     }
 //4
-public List<Subject> suggestSubjectsForUser(User user, int semester) {
+public List<SubjectRecommendDTO> suggestSubjectsForUser(User user, int semester) {
     // Môn đã học và pass rồi
     Set<String> learnedSubjectIds = scoreRepository.findByUserAndPassed(user,1)
             .stream()
@@ -140,8 +140,7 @@ public List<Subject> suggestSubjectsForUser(User user, int semester) {
     huItemsets.sort((a, b) -> Float.compare(b.getUtility(), a.getUtility())); // sắp xếp giảm dần
 
     // Tránh gợi ý trùng
-    Set<Subject> suggestions = new LinkedHashSet<>();
-
+    Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
     // Duyệt từng itemset theo utility giảm dần
     for (HUItemset huItemset : huItemsets) {
         List<String> itemIds = huItemset.getItems();
@@ -151,13 +150,16 @@ public List<Subject> suggestSubjectsForUser(User user, int semester) {
         long countLearned= itemIds.stream().filter(learnedSubjectIds::contains).count();
         double coverage= Math.round((double)countLearned/itemIds.size()*10)/10.0;
         System.out.println(coverage);
-        if (coverage<0.5) continue;
+//        if (coverage<0.5) continue;
         for (String subjectId : huItemset.getItems()) {
             //nếu nó chưa học hoặc chưa pass
             if (!learnedSubjectIds.contains(subjectId)) {
                 Subject subject = subjectRepository.findById(subjectId).orElse(null);
                 if (subject != null && isEligible(user, subject,semester, learnedSubjectIds)) {
-                    suggestions.add(subject);
+                    SubjectRecommendDTO subjectRecommendDTO=new SubjectRecommendDTO();
+                    subjectRecommendDTO.setSubject(subject);
+                    subjectRecommendDTO.setUtility(huItemset.getUtility());
+                    suggestions.add(subjectRecommendDTO);
                 }
             }
         }
