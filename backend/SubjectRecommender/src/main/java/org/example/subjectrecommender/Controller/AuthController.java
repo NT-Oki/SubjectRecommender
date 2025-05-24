@@ -44,7 +44,7 @@ public class AuthController {
     }
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassWord(@RequestBody PasswordChangeDTO passwordChangeDTO) {
-        if(userService.changePassWord(passwordChangeDTO.getUserId(), passwordChangeDTO.getNewpassword())){
+        if(userService.changePassWord(passwordChangeDTO.getUserId(), passwordChangeDTO.getNewPassWord())){
             return ResponseEntity.ok("Thay đổi mật khẩu thành công cho user "+passwordChangeDTO.getUserId());
         }else{
             return ResponseEntity.badRequest().body("Thay đổi mật khẩu thất bại cho user "+passwordChangeDTO.getUserId());

@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 
 public class ConvertToUnicode {
     public static String removeAccentAndToLower(String input) {
+        input = input.replace("Đ", "D").replace("đ", "d");
+
         // Loại bỏ dấu
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");

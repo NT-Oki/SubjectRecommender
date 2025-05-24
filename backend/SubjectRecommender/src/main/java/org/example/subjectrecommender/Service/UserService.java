@@ -4,9 +4,12 @@ import jakarta.persistence.EntityNotFoundException;
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.UserRepository;
 import org.example.subjectrecommender.dto.UserDTO;
+import org.example.subjectrecommender.util.ConvertToUnicode;
 import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserService {
@@ -40,4 +43,16 @@ public class UserService {
         System.out.println(newPass);
         return userRepository.updatePasswordById(userID, newPass)>0;
     }
+    public int updatePasswordByNameorLastName(String name, String lastName){
+        List<User> userList=userRepository.findByNameContainingOrLastNameContaining(name,lastName);
+        int updated=0;
+        for(User user:userList){
+            String pass= ConvertToUnicode.removeAccentAndToLower(user.getName())+user.getId();
+            String newPassWord=PasswordUtil.hashPassword(pass);
+            int row= userRepository.updatePasswordById(user.getId(), newPassWord);
+            updated+=row;
+        }
+        return updated;
+    }
+
 }

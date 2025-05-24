@@ -1,7 +1,9 @@
 package org.example.subjectrecommender.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PasswordUtil {
     private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -15,6 +17,6 @@ public class PasswordUtil {
 
     public static void main(String[] args) {
         System.out.println(hashPassword("thao21130542"));
-        System.out.println(matchPassword("thao21130542","$2a$10$h.7jvGMyJ4s9l8rUlk3R9uupZv9U0q3spz26cwlO.OM6IjnbKKAqm"));
+        System.out.println(matchPassword("dat","$2a$10$h.7jvGMyJ4s9l8rUlk3R9uupZv9U0q3spz26cwlO.OM6IjnbKKAqm"));
     }
 }
