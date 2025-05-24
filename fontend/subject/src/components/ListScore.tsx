@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material"
+import { Box, Typography, CircularProgress } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -35,12 +35,14 @@ const ListScore = () => {
     };
 
     const [data, setData] = useState<DataType | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     useEffect(() => {
         const fetchUserScore = async () => {
             const token = sessionStorage.getItem("token");
             const userId = sessionStorage.getItem("userId");
 
             try {
+                setIsLoading(true);
                 const response = await axios.get(API_ENDPOINTS.SCORE, {
                     params: {
                         userId: `${userId}`,
@@ -53,6 +55,8 @@ const ListScore = () => {
                 setData(response.data);
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
+            } finally{
+                setIsLoading(false);
             }
         };
 
@@ -61,8 +65,7 @@ const ListScore = () => {
 
     return (
         // body--------------------------------------
-
- <>
+     <>
                 <Box
                     sx={{
                         backgroundColor: "#3EBE30",
@@ -101,8 +104,6 @@ const ListScore = () => {
                         zIndex: 11,
                     }}
                 >
-
-
                 </Box>
 
                 <Box
@@ -147,7 +148,12 @@ const ListScore = () => {
                 </Box>
                 {/* ///////// */}
 
-                {data ? Object.entries(data).map(([key, scoreList]) => (
+              {isLoading?
+            (
+                 <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+            )  :data ?( Object.entries(data).map(([key, scoreList]) => (
 
                     <Fragment key={key}>
                         <Box
@@ -212,9 +218,9 @@ const ListScore = () => {
 
                             </Box>
                         ))}
-                    </Fragment>
-                )) : null}
-
+                    </Fragment>)
+                )) : null
+            }  
           </>
            
         //    end Body---------------------------------

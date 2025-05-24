@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     boolean existsById(String id);
@@ -15,5 +17,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Transactional
     @Query("UPDATE User u SET u.password = :newPassword WHERE u.id = :id")
     int updatePasswordById(@Param("id") String id, @Param("newPassword") String newPassword);
+    List<User> findByNameContainingOrLastNameContaining(String name, String lastname);
+
 
 }
+
+

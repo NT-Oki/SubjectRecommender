@@ -11,6 +11,9 @@ const API_ENDPOINTS = {
   SCORE: `${API_URL}/listScore`,
   INFO: `${API_URL}/info`,
   RECOMMEND: `${HANDLE_URL}/recommend`,
+  CHANGEPASSWORD: `${AUTH_URL}/change-password`,
+  FORGOTPASSWORD: `${AUTH_URL}/forgot-password`,
+  CHECKTOKEN: `${AUTH_URL}/check-token`,
 };
 
 export default API_ENDPOINTS;
