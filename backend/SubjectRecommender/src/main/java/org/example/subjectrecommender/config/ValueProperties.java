@@ -13,5 +13,6 @@ public class ValueProperties {
    private int minUtility;
    private String secret_key;
    private int time_token;
+   private String email;
 
 }
