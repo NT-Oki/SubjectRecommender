@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y dos2unix && dos2unix gradlew
 RUN find ./ -name "*.java" | xargs dos2unix
 # Build the application (skip tests for faster build)
 RUN ./gradlew build -x test
+RUN ls -l /app/build/libs/
 
 # Stage 2: Runtime image
 FROM openjdk:22-jdk-slim
