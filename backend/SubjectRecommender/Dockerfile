@@ -1,24 +1,28 @@
-# Stage 1: Build
+# Stage 1: Build the application using Gradle Wrapper
 FROM gradle:8.8-jdk22 AS builder
 
 WORKDIR /app
 
-# Copy toàn bộ source code (bao gồm gradlew và gradle wrapper)
+# Copy entire source code to the container
 COPY . .
 
-# Cấp quyền cho gradlew nếu cần
-RUN chmod +x ./gradlew
-
-# Build project (bỏ qua test)
+# Ensure gradlew has execute permission
+RUN chmod +x gradlew
+RUN apt-get update && apt-get install -y dos2unix && dos2unix gradlew
+RUN find ./ -name "*.java" | xargs dos2unix
+# Build the application (skip tests for faster build)
 RUN ./gradlew build -x test
 
-# Stage 2: Runtime
-FROM openjdk:222-jdk-slim
+# Stage 2: Runtime image
+FROM openjdk:22-jdk-slim
 
 WORKDIR /app
 
-# Copy file jar từ stage builder vào
+# Copy the built JAR file from the builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Lệnh chạy app
+# Expose port (optional, if you use port like 8080)
+EXPOSE 8080
+
+# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
