@@ -20,7 +20,7 @@ FROM openjdk:22-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR file from the builder stage
-COPY --from=builder /app/build/libs/SubjectRecommender-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/build/libs/app-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port (optional, if you use port like 8080)
 EXPOSE 8080
