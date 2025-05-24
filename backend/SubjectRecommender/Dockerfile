@@ -1,14 +1,16 @@
-# Dùng JDK 21 làm base image
-FROM openjdk:21-jdk-slim
+# Giai đoạn build
+FROM gradle:8.7-jdk21 AS builder
 
-# Thư mục làm việc trong container
+WORKDIR /app
+COPY --chown=gradle:gradle . .
+
+RUN gradle build -x test
+
+# Giai đoạn runtime
+FROM openjdk:21-jdk-slim
 WORKDIR /app
 
-# Copy file jar (bạn build jar rồi mới copy)
-COPY target/*.jar app.jar
+COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Expose port 8080 (port mặc định Spring Boot)
 EXPOSE 8080
-
-# Lệnh chạy ứng dụng
 ENTRYPOINT ["java", "-jar", "app.jar"]
