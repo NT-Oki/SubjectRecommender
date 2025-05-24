@@ -2,15 +2,23 @@
 FROM gradle:8.7-jdk21 AS builder
 
 WORKDIR /app
-COPY --chown=gradle:gradle . .
 
-RUN gradle build -x test
+COPY . .
+
+# Cho phép thực thi file gradlew nếu cần
+RUN chmod +x ./gradlew
+
+# Build project, bỏ qua test
+RUN ./gradlew build -x test
 
 # Giai đoạn runtime
 FROM openjdk:21-jdk-slim
-WORKDIR /app/backend/SubjectRecommender
 
-COPY --from=builder /app/backend/SubjectRecommender/build/libs/*.jar app.jar
+WORKDIR /app
+
+# Copy file jar đã build
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
