@@ -14,7 +14,7 @@
                 @Override
                 public void addCorsMappings(CorsRegistry registry) {
                     registry.addMapping("/**")
-                            .allowedOrigins("http://localhost:5173")  // địa chỉ React
+                            .allowedOrigins("https://6831ff354451b20008c68ff2--enti-vt.netlify.app")  // địa chỉ React
                             .allowedMethods("GET", "POST", "PUT", "DELETE")
                             .allowCredentials(true);
                 }
