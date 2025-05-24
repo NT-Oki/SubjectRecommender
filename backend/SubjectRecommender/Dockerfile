@@ -1,24 +1,24 @@
-# Giai đoạn build
-FROM gradle:8.7-jdk21 AS builder
+# Stage 1: Build
+FROM gradle:8.8-jdk22 AS builder
 
 WORKDIR /app
 
+# Copy toàn bộ source code (bao gồm gradlew và gradle wrapper)
 COPY . .
 
-# Cho phép thực thi file gradlew nếu cần
+# Cấp quyền cho gradlew nếu cần
 RUN chmod +x ./gradlew
 
-# Build project, bỏ qua test
+# Build project (bỏ qua test)
 RUN ./gradlew build -x test
 
-# Giai đoạn runtime
-FROM openjdk:21-jdk-slim
+# Stage 2: Runtime
+FROM openjdk:222-jdk-slim
 
 WORKDIR /app
 
-# Copy file jar đã build
+# Copy file jar từ stage builder vào
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-EXPOSE 8080
-
+# Lệnh chạy app
 ENTRYPOINT ["java", "-jar", "app.jar"]
