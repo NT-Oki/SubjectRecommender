@@ -8,9 +8,9 @@ RUN gradle build -x test
 
 # Giai đoạn runtime
 FROM openjdk:21-jdk-slim
-WORKDIR /app
+WORKDIR /app/backend/SubjectRecommender
 
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/backend/SubjectRecommender/build/libs/*.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
