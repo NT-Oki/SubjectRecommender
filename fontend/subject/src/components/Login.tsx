@@ -173,6 +173,7 @@ const Login = () => {
                 token:tokenForgot,
                 userId: userIdForgot,
             });
+            console.log(res.data);
             setHiddenTokenForm(true);
             setHiddenChangePass(false);
         }catch(err:any){
