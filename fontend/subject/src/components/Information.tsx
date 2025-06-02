@@ -138,7 +138,7 @@ const Information = () => {
     const changePassWord = async () => {
         if (isChangePassWord()) {
             try {
-                setIsLoading(true);
+                // setIsLoading(true);
                 const res = await axios.post(API_ENDPOINTS.CHANGEPASSWORD, {
                     newPassWord,
                     userId,
@@ -148,6 +148,7 @@ const Information = () => {
                     }
                 }
                 );
+                console.log(res.data);
                 setErroChangePassWord("Thay đổi mật khẩu thành công")
                 setStatusChangePassWord(1);
                 setHiddenChangePass(true);
@@ -158,7 +159,7 @@ const Information = () => {
                 setStatusChangePassWord(0);
                 setIsHiddenNoticeChangePassWord(false);
             } finally {
-                setIsLoading(false);
+                // setIsLoading(false);
             }
         }
     }
