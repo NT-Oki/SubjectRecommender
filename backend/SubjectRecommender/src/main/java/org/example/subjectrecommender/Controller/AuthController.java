@@ -13,6 +13,7 @@ import org.example.subjectrecommender.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -36,25 +37,22 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestParam String userID, @RequestParam String password) {
-        // Kiểm tra đăng nhập bằng service
         if (userService.login(userID, password)) {
-            // Tạo token duy nhất với thời gian sống định nghĩa trong JwtUtil
-            String token = jwtUtil.generateToken(userID);
-
-            // Trả token về client
+            User user=userService.getByID(userID);
+            String token = jwtUtil.generateToken(userID,user.getRole());
             return ResponseEntity.ok(Map.of(
                     "token", token,
-                    "userId",userID
+                    "userId",userID,
+                    "role",user.getRole()
             ));
         } else {
-            // Đăng nhập sai trả về lỗi 401
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mật khẩu chưa đúng");
         }
     }
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         // Không cần làm gì ở server nếu không lưu token
-        return ResponseEntity.ok("Logged out");
+        return ResponseEntity.ok("Logout sucessful");
     }
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassWord(@RequestBody PasswordChangeDTO passwordChangeDTO) {
@@ -88,8 +86,6 @@ public class AuthController {
     @PostMapping("/check-token")
     public ResponseEntity<?> checkToken(@RequestBody PasswordForgotDTO passwordForgotDTO) {
         try {
-
-
             ResetToken resetToken = resetTokenService.findByToken(passwordForgotDTO.getToken());
             System.out.println(resetToken);
             if (!(resetToken.getUserId().equals(passwordForgotDTO.getUserId()))) {

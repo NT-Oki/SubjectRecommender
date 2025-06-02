@@ -7,6 +7,7 @@ import ListScore from "./ListScore"
 import { Routes, Route } from "react-router-dom";
 import Information from "./Information"
 import RecommendList from "./RecommendList"
+import Admin from "./Admin"
 const Body = () => {
     
     return (
@@ -34,6 +35,8 @@ const Body = () => {
                     <Routes>
         <Route path="listscore" element={<ListScore />} />
         <Route path="recommend/:semester" element={<RecommendList />} />
+        <Route path="admin" element={<Admin/>} />
+        
       </Routes>
             </Box>
             {/* end left------------------------------------------ */}

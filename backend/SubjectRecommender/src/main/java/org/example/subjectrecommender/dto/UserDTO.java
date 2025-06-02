@@ -10,13 +10,13 @@ public class UserDTO {
     private String lastName;
     private String name;
     private String major;
-    private int enrollmesntYear;
+    private int enrollmentYear ;
     public UserDTO(User user) {
         this.id = user.getId();
         this.lastName = user.getLastName();
         this.name = user.getName();
         this.major = user.getMajor();
-        this.enrollmesntYear = user.getEnrollmentYear();
+        this.enrollmentYear  = user.getEnrollmentYear();
     }
 
 }

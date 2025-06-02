@@ -9,6 +9,7 @@ import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,6 +60,14 @@ public class UserService {
     }
     public void saveAll(List<User> userList) {
         userRepository.saveAll(userList);
+    }
+    public List<UserDTO> getUserDTOList() {
+        List<User> userList=userRepository.findAll();
+        List<UserDTO> userDTOList=new ArrayList<>();
+        for(User user:userList){
+            userDTOList.add(new UserDTO(user));
+        }
+        return userDTOList;
     }
 
 }

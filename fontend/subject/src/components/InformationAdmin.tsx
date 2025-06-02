@@ -8,8 +8,13 @@ import API_ENDPOINTS from "../config/apiConfig";
 import axios from 'axios';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+const menuItems = [
+  { id: "score", label: "Quản lý điểm" },
+  { id: "student", label: "Quản lý sinh viên" },
+  { id: "subject", label: "Quản lý môn học" },
+];
 
-const Information = () => {
+const InformationAdmin = () => {
     interface User {
         id: string;
         lastName: string;
@@ -21,7 +26,6 @@ const Information = () => {
     const userId = sessionStorage.getItem("userId");
     const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
-    const [semester, setSemester] = useState<number | null>(1);
     const [hiddenChangePass, setHiddenChangePass] = useState<boolean>(true);
     const [newPassWord, setNewPassWord] = useState("");
     const [preNewPassWord, setPreNewPassWord] = useState("");
@@ -34,6 +38,19 @@ const Information = () => {
     const [erroChangePassWord, setErroChangePassWord] = useState("");
     const [statusChangePassWord, setStatusChangePassWord] = useState<Number>(0);
 
+      const [selectedItem, setSelectedItem] = useState("score");
+
+     const selectItem = (s:string)=>{
+        setSelectedItem(s);
+        if(s==="score"){
+            navigate("/admin/score")
+        }else if(s==="subject"){
+            navigate("/admin/subject")
+        }else if(s==="student"){
+            navigate("/admin/student")
+        }  
+
+        }
     useEffect(() => {
         const fetchUserScore = async () => {
             try {
@@ -59,6 +76,7 @@ const Information = () => {
                 // }
             }
         };
+       
 
         fetchUserScore();
     }, []);
@@ -127,9 +145,6 @@ const Information = () => {
     const logout = () => {
         sessionStorage.removeItem("token");
         navigate("/");
-    }
-    const recommend = () => {
-        navigate(`/home/recommend/${semester}`)
     }
     const isChangePassWord = () => {
         if (isNewPassWordOK && isPreNewPassWordOK) return true;
@@ -339,64 +354,44 @@ const Information = () => {
                         height: "100%"
                     }}
                 >
-                    <Box
-                        sx={{
+                    {menuItems.map((item)=>(
+                         <Box
+                         key={item.id}
+                         onClick={()=>selectItem(item.id)}
+                         sx={{
                             display: "flex",
                             flexDirection: "row",
-                            color: "#37BD74",
+                            color: selectedItem === item.id ? "gray" : "#37BD74",
+                            backgroundColor: selectedItem === item.id ? "ButtonShadow" : "none",
+                            boxShadow: selectedItem === item.id ? "inset 4px 0 0 0 #2e7d32" : "none",
                             paddingTop: "5px",
                             alignItems: "center",
+                            borderBottom:"1px solid grey",
+                            cursor:"pointer",
+                            ":hover":{
+                                backgroundColor:"ButtonHighlight",
+                                transition: "background-color 0.3s ease",
+                                color:"gray"
+                            },
+                            
                         }}
                     >
                         <Typography
                             sx={{
-                                fontFamily: "Roboto",
+                                fontFamily: "sans-serif",
                                 fontSize: "16px",
                                 fontWeight: 400,
-                                marginRight: "10px"
+                                marginLeft: "10px",
+                                
+                                
                             }}
                         >
-                            Học kỳ:
+                            {item.label}
                         </Typography>
-
-
-                        <RadioGroup
-                            value={semester}
-                            onChange={(e) => setSemester(Number(e.target.value))}
-                            row // thêm dòng này nếu bạn muốn các nút hiển thị ngang hàng
-                        >
-                            <FormControlLabel value="1" control={<Radio color="success" />} label="1" />
-                            <FormControlLabel value="2" control={<Radio color="success" />} label="2" />
-                        </RadioGroup>
-
                     </Box>
-                    <Button variant="contained"
-                        onClick={recommend}
-                        sx={{
-                            m: 1,
-                            p: 0,
-                            backgroundColor: "orangered",
-                            textTransform: 'none',
-                            fontFamily: "sans-serif",
-                            color: "#272424",
-                            fontWeight: 500,
-                            fontSize: "17px",
 
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faLightbulb}
-                            color="yellow"
-                            style={
-                                {
-                                    marginRight: "7px"
-                                }
-                            }
-                        ></FontAwesomeIcon> Gợi ý môn học
-                    </Button>
-                    
-
+                    ))}
                 </Box>
-                
             </Box>
             {
                 !hiddenChangePass && (
@@ -615,4 +610,4 @@ const Information = () => {
 
     )
 }
-export default Information;
+export default InformationAdmin;
