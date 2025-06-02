@@ -6,6 +6,7 @@ import org.example.subjectrecommender.Service.MainService;
 import org.example.subjectrecommender.Service.ScoreService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.config.ValueProperties;
+import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,13 +43,16 @@ public class HandleController {
 
     }
     @GetMapping("/recommend")
-    public ResponseEntity<List<SubjectRecommendDTO>> recomendSubject(@RequestParam int semester, @RequestParam String userId) throws IOException {
-        User user=userService.getByID(userId);
-        List<SubjectRecommendDTO> result=mainService.suggestSubjectsForUser(user,semester);
-        if(result.size()>10){
-            result=result.subList(0,10);
-        }
-        System.out.println("Số lượng môn học gợi ý: "+result.size());
-       return ResponseEntity.ok().body(result);
+    public ResponseEntity<?> recomendSubject(@RequestParam int semester, @RequestParam String userId) throws IOException {
+//        User user=userService.getByID(userId);
+        List<SubjectRecommendDTO> subjectRecommendDTOs=mainService.suggestSubjectsForUser(userId,semester);
+//        if(result.size()>10){
+//            result=result.subList(0,10);
+//        }
+        List<SubjectGroupRequirementDTO> subjectGroupRequirementDTOs=mainService.getAllSubjectGroupRequirments(userId);
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("subjectList", subjectRecommendDTOs);
+        response.put("learnedSubjects", subjectGroupRequirementDTOs);
+       return ResponseEntity.ok().body(response);
     }
 }

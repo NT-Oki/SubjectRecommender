@@ -1,4 +1,4 @@
-import { Box, Button, Typography, RadioGroup, FormControlLabel, Radio, Input, FormControl, FormHelperText, CircularProgress, } from "@mui/material"
+import { Box, Button, Typography, RadioGroup, FormControlLabel, Radio, Input, FormControl, FormHelperText, } from "@mui/material"
 import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -29,7 +29,7 @@ const Information = () => {
     const [preNewPassWordErro, setPreNewPassWordErro] = useState("");
     const [isNewPassWordOK, setIsNewPassWordOK] = useState(false);
     const [isPreNewPassWordOK, setIsPreNewPassWordOK] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [isHiddenNoticeChangePassWord, setIsHiddenNoticeChangePassWord] = useState(true);
     const [erroChangePassWord, setErroChangePassWord] = useState("");
     const [statusChangePassWord, setStatusChangePassWord] = useState<Number>(0);
@@ -138,7 +138,7 @@ const Information = () => {
     const changePassWord = async () => {
         if (isChangePassWord()) {
             try {
-                setIsLoading(true);
+                // setIsLoading(true);
                 const res = await axios.post(API_ENDPOINTS.CHANGEPASSWORD, {
                     newPassWord,
                     userId,
@@ -148,6 +148,7 @@ const Information = () => {
                     }
                 }
                 );
+                console.log(res.data);
                 setErroChangePassWord("Thay đổi mật khẩu thành công")
                 setStatusChangePassWord(1);
                 setHiddenChangePass(true);
@@ -158,7 +159,7 @@ const Information = () => {
                 setStatusChangePassWord(0);
                 setIsHiddenNoticeChangePassWord(false);
             } finally {
-                setIsLoading(false);
+                // setIsLoading(false);
             }
         }
     }
@@ -392,8 +393,10 @@ const Information = () => {
                             }
                         ></FontAwesomeIcon> Gợi ý môn học
                     </Button>
+                    
 
                 </Box>
+                
             </Box>
             {
                 !hiddenChangePass && (

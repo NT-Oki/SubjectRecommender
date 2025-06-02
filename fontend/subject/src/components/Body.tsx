@@ -1,17 +1,12 @@
-import { Box, Typography, Button } from "@mui/material"
+import { Box} from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
-import { GiTwirlyFlower } from "react-icons/gi";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCogs, faCircleExclamation, faXmark, faLightbulb } from '@fortawesome/free-solid-svg-icons'
 import ListScore from "./ListScore"
 import { Routes, Route } from "react-router-dom";
 import Information from "./Information"
 import RecommendList from "./RecommendList"
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 const Body = () => {
     
     return (
@@ -48,7 +43,7 @@ const Body = () => {
                 sx={{
                     backgroundColor: "red",
                     // height: "150px",
-                    width: "19%",
+                    width: "18%",
                     marginLeft: "15px",
                 }}
             >

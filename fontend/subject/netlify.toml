@@ -1,7 +1,6 @@
 [build]
   command = "npm run build"
   publish = "dist" # nếu dùng Vite
-  # publish = "build" nếu dùng CRA
 
 [[redirects]]
   from = "/*"

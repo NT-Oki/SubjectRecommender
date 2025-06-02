@@ -8,7 +8,7 @@ import "@fontsource/roboto/latin.css"
 import nonglam from '../assets/nonglam.jpg';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCogs, faCircleExclamation, faXmark, faLightbulb, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { faCircleExclamation, faXmark, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 const Login = () => {
     const [userID, setUserID] = useState("");
     const [password, setPassword] = useState("");
@@ -71,7 +71,7 @@ const Login = () => {
             })
             setHidenForgotPassWord(true);
             setHiddenTokenForm(false);
-
+            console.log(res.data);
         }catch(err:any){
           setUserIdForgotErro(err.response.data)
         }finally{
@@ -152,6 +152,7 @@ const Login = () => {
                     userId: userIdForgot,
                 }, 
                 );
+                console.log(res.data);
                 setErroChangePassWord("Thay đổi mật khẩu thành công")
                 setStatusChangePassWord(1);
                 setHiddenChangePass(true);
@@ -172,6 +173,7 @@ const Login = () => {
                 token:tokenForgot,
                 userId: userIdForgot,
             });
+            console.log(res.data);
             setHiddenTokenForm(true);
             setHiddenChangePass(false);
         }catch(err:any){
