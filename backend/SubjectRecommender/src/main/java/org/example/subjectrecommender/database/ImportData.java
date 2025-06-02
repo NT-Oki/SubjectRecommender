@@ -225,6 +225,14 @@ public class ImportData {
         System.out.println("Đã cập nhật thành công CurriculumVersion: "+userList.size());
 
     }
+    public void updateRoleForUser(int role){
+        List<User> userList = userService.getUserList();
+        for(User user : userList){
+            user.setRole(role);
+        }
+        userService.saveAll(userList);
+        System.out.println("update role thành công");
+    }
 
 
 

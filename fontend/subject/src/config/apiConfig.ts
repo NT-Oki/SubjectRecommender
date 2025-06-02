@@ -3,6 +3,7 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const API_URL = `${BASE_URL}/api`;
 const AUTH_URL = `${BASE_URL}/auth`;
 const HANDLE_URL = `${BASE_URL}/handle`;
+const ADMIN_URL = `${BASE_URL}/admin`;
 
 const API_ENDPOINTS = {
   USER_INFO: `${API_URL}/user-info`,
@@ -14,6 +15,10 @@ const API_ENDPOINTS = {
   CHANGEPASSWORD: `${AUTH_URL}/change-password`,
   FORGOTPASSWORD: `${AUTH_URL}/forgot-password`,
   CHECKTOKEN: `${AUTH_URL}/check-token`,
+  ADMIN:{
+    SCORE: `${ADMIN_URL}/scores`,
+    STUDENT: `${ADMIN_URL}/students`,
+  }
 };
 
 export default API_ENDPOINTS;

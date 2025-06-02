@@ -47,13 +47,19 @@ const Login = () => {
             const token = response.data.token;
             const userId = response.data.userId;
             const exp = response.data.exp;
+            const role = response.data.role;
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("userId", userId);
             sessionStorage.setItem("exp", exp);
-
+            sessionStorage.setItem("role",role);
             alert("Đăng nhập thành công!");
             // Ví dụ chuyển trang
-            navigate("/home/listscore")
+            if(role==1){
+                navigate("/admin/score");
+            }else if(role==2){
+                navigate("/home/listscore");
+            }
+
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                alert(error.response?.data);

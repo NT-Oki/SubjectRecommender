@@ -19,6 +19,7 @@ public class SubjectRecommenderApplication {
 //        System.out.println(updated);
 //        ImportData importData= context.getBean(ImportData.class);
 //        importData.updateCurriculumVersionForUser("7480201_2020");
+//        importData.updateRoleForUser(2);//student
 
 
 
