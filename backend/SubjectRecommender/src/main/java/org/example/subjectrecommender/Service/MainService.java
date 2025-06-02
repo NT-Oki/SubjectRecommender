@@ -27,6 +27,8 @@ public class MainService {
     PrerequisiteRepository prerequisiteRepository;
     @Autowired
     CurriculumCourseRepository curriculumCourseRepository;
+    @Autowired
+    PrerequisiteService prerequisiteService;
 
     //1
     public void exportTransactionFile(String outputPath) throws IOException {
@@ -156,14 +158,20 @@ public List<SubjectRecommendDTO> suggestSubjectsForUser(User user, int semester)
             if (!learnedSubjectIds.contains(subjectId)) {
                 Subject subject = subjectRepository.findById(subjectId).orElse(null);
                 if (subject != null && isEligible(user, subject,semester, learnedSubjectIds)) {
+                    List<Subject> preSubjects =prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
                     SubjectRecommendDTO subjectRecommendDTO=new SubjectRecommendDTO();
                     subjectRecommendDTO.setSubject(subject);
                     subjectRecommendDTO.setUtility(huItemset.getUtility());
+                    subjectRecommendDTO.setPreSubjects(preSubjects);
                     suggestions.add(subjectRecommendDTO);
                 }
             }
         }
     }
+    if(suggestions.size()>10){
+        suggestions.stream().limit(10);
+    }
+
 
     return new ArrayList<>(suggestions);
 }

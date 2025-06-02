@@ -28,6 +28,7 @@ const ListScore = () => {
         passed: number;
         year: number;
         utility: number;
+        preSubjects: Subject[];
     }
 
     type DataType = {
@@ -207,7 +208,11 @@ const ListScore = () => {
                                 <Typography flex={1}>{score.subject?.id}</Typography>
                                 <Typography flex={2}>{score.subject?.subjectName}</Typography>
                                 <Typography flex={0.5}>{score.subject?.credit}</Typography>
-                                <Typography flex={1}>aaaa</Typography>
+                                <Typography flex={1}>
+                                    {score.preSubjects.map((subject:Subject)=>
+                                    subject.id
+                                    ).join(`,`)}
+                                </Typography>
                                 <Typography
                                     flex={0.6}
 

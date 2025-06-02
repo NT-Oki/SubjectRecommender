@@ -23,6 +23,7 @@ const RecommendList = () => {
   interface SubjectRecommend {
     subject: Subject;
     utility: number;
+    preSubjects: Subject[];
   }
   const navigate=useNavigate();
   const [loading, setLoading] = useState(true);
@@ -150,7 +151,7 @@ const RecommendList = () => {
         <Typography flex={2}>Tên môn học</Typography>
         <Typography flex={0.5}>Số tín chỉ</Typography>
         <Typography flex={1.2}>Môn tiên quyết</Typography>
-        <Typography flex={0.8}>Môn bắt buộc</Typography>
+        <Typography flex={0.8}>Nhóm môn học</Typography>
         <Typography flex={1}>Chỉ số ưu tiên</Typography>
       </Box>
 
@@ -190,9 +191,12 @@ const RecommendList = () => {
             <Typography flex={1}>{item.subject?.id}</Typography>
             <Typography flex={2}>{item.subject?.subjectName}</Typography>
             <Typography flex={0.5}>{item.subject?.credit}</Typography>
-            <Typography flex={1.2}>aaaa</Typography>
+            <Typography flex={1.2}>
+              {item.preSubjects.map((s : Subject)=>s.id
+              ).join(`, `)
+              }</Typography>
             <Typography flex={0.8}>
-              {item.subject.subjectGroup.id === "BB" ? "x" : ""}
+              {item.subject.subjectGroup.id}
             </Typography>
             <Typography flex={1}>{item.utility}</Typography>
           </Box>

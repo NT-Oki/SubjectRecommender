@@ -27,8 +27,7 @@ public class APIController {
 
     @GetMapping("/listScore")
     public ResponseEntity<Map<String, List<ScoreResponseDTO>>> listScore(@RequestParam String userId) {
-        Map<String, List<ScoreResponseDTO>> result =new HashMap<>();
-        result = scoreService.getGroupedScoresByUser(userId);
+        Map<String, List<ScoreResponseDTO>> result = scoreService.getGroupedScoresByUser(userId);
         return ResponseEntity.ok(result);
     }
     @GetMapping("/info")

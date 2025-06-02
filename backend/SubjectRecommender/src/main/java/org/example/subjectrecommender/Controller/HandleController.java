@@ -44,9 +44,9 @@ public class HandleController {
     public ResponseEntity<List<SubjectRecommendDTO>> recomendSubject(@RequestParam int semester, @RequestParam String userId) throws IOException {
         User user=userService.getByID(userId);
         List<SubjectRecommendDTO> result=mainService.suggestSubjectsForUser(user,semester);
-        if(result.size()>10){
-            result=result.subList(0,10);
-        }
+//        if(result.size()>10){
+//            result=result.subList(0,10);
+//        }
         System.out.println("Số lượng môn học gợi ý: "+result.size());
        return ResponseEntity.ok().body(result);
     }
