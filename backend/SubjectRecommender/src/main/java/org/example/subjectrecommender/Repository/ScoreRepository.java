@@ -19,7 +19,7 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
     void updateUtilityById(@Param("utility") float utility, @Param("id") Long id);
     public List<Score> findByUser(User user);
 
-    List<Score> findByUserAndPassed(User user, int i);
+    List<Score> findByUserIdAndPassed(String userId, int i);
     List<Score> findAllByUserId(String id);
     List<Score> findAllByUserIdAndPassed(String id, int i);
 }

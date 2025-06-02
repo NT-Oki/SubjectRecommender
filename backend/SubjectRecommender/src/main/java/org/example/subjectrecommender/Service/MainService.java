@@ -3,6 +3,7 @@ package org.example.subjectrecommender.Service;
 import ca.pfv.spmf.algorithms.frequentpatterns.efim.AlgoEFIM;
 import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Repository.*;
+import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,12 @@ public class MainService {
     CurriculumCourseRepository curriculumCourseRepository;
     @Autowired
     PrerequisiteService prerequisiteService;
+    @Autowired
+    SubjectGroupRequirementService subjectGroupRequirementService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private SubjectGroupService subjectGroupService;
 
     //1
     public void exportTransactionFile(String outputPath) throws IOException {
@@ -104,11 +111,10 @@ public class MainService {
     /**
      * xét subject đưa vào có đủ điều kiện để được gợi ý không
      * 1.
-     * @param user
      * @param subject
      * @return
      */
-    public boolean isEligible(User user, Subject subject, int semester, Set<String> passedSubjectIds) {
+    public boolean isEligible(Subject subject, int semester, Set<String> passedSubjectIds) {
     //     Kiểm tra các môn tiên quyết (nếu có) của subject đã pass chưa
         List<Prerequisite> prerequisites =prerequisiteRepository.findBySubject(subject);
         for (Prerequisite prerequisite : prerequisites) {
@@ -130,9 +136,9 @@ public class MainService {
         return true;
     }
 //4
-public List<SubjectRecommendDTO> suggestSubjectsForUser(User user, int semester) {
+public List<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester) {
     // Môn đã học và pass rồi
-    Set<String> learnedSubjectIds = scoreRepository.findByUserAndPassed(user,1)
+    Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId,1)
             .stream()
             .map(score -> score.getSubject().getId())
             .collect(Collectors.toSet());
@@ -157,7 +163,7 @@ public List<SubjectRecommendDTO> suggestSubjectsForUser(User user, int semester)
             //nếu nó chưa học hoặc chưa pass
             if (!learnedSubjectIds.contains(subjectId)) {
                 Subject subject = subjectRepository.findById(subjectId).orElse(null);
-                if (subject != null && isEligible(user, subject,semester, learnedSubjectIds)) {
+                if (subject != null && isEligible(subject,semester, learnedSubjectIds)) {
                     List<Subject> preSubjects =prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
                     SubjectRecommendDTO subjectRecommendDTO=new SubjectRecommendDTO();
                     subjectRecommendDTO.setSubject(subject);
@@ -175,5 +181,35 @@ public List<SubjectRecommendDTO> suggestSubjectsForUser(User user, int semester)
 
     return new ArrayList<>(suggestions);
 }
+    /**
+     * Lấy ra danh sách DTO( nhóm môn học, số tín chỉ yêu cầu, số tín chỉ đã học
+     */
+    public List<SubjectGroupRequirementDTO> getAllSubjectGroupRequirments(String userId) {
+        List<Score> scoreList= scoreRepository.findByUserIdAndPassed(userId,1);
+        User user=userRepository.getReferenceById(userId);
+        List<String> learnedSubjectIds=new ArrayList<>();
+        for(Score score: scoreList){
+            learnedSubjectIds.add(score.getSubject().getId());
+        }
+        List<SubjectGroupRequirement> subjectGroupRequirementList=subjectGroupRequirementService.getAllByCurriculumVersion(user.getCurriculumVersion().getId());
+        List<SubjectGroupRequirementDTO> subjectGroupRequirementDTOList=new ArrayList<>();
+        for(SubjectGroupRequirement subjectGroupRequirement : subjectGroupRequirementList) {
+            SubjectGroupRequirementDTO subjectGroupRequirementDTO=new SubjectGroupRequirementDTO();
+            subjectGroupRequirementDTO.setSubjectGroup(subjectGroupRequirement.getSubjectGroup());
+            subjectGroupRequirementDTO.setRequirementCredit(subjectGroupRequirement.getRequiredCredit());
+            int learnedCredit=0;
+            for(String subjectId: learnedSubjectIds) {
+                Subject subject=subjectRepository.getReferenceById(subjectId);
+                if(subject.getSubjectGroup().equals(subjectGroupRequirement.getSubjectGroup())) {
+                    learnedCredit+=subject.getCredit();
+                }
+            }
+            subjectGroupRequirementDTO.setLearnedCredit(learnedCredit);
+            subjectGroupRequirementDTOList.add(subjectGroupRequirementDTO);
+        }
+        System.out.println(subjectGroupRequirementDTOList);
+        return subjectGroupRequirementDTOList;
+    }
+
 
 }

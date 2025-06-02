@@ -8,6 +8,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const RecommendList = () => {
   interface SubjectGroup {
@@ -25,9 +26,15 @@ const RecommendList = () => {
     utility: number;
     preSubjects: Subject[];
   }
+  interface SubjectGroupRequirmentDTO{
+    subjectGroup : SubjectGroup;
+    requirementCredit: number;
+    learnedCredit: number;
+  }
   const navigate=useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubjectRecommend[]>([]);
+  const [dataGroup, setDataGroup] = useState<SubjectGroupRequirmentDTO[]>([]);
      const { semester } = useParams();
 
   useEffect(() => {
@@ -46,7 +53,8 @@ const RecommendList = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setData(response.data);
+        setData(response.data.subjectList);
+        setDataGroup(response.data.learnedSubjects);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách gợi ý:", error);
       } finally {
@@ -60,7 +68,7 @@ const RecommendList = () => {
     navigate("/home/listscore")
   }
   return (
-   <>
+   <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
       {/* Header chương trình đào tạo */}
       <Box
         sx={{
@@ -72,6 +80,7 @@ const RecommendList = () => {
           position: "sticky",
           top: 0,
           zIndex: 12,
+         
         }}
       >
         <GiTwirlyFlower />
@@ -207,7 +216,47 @@ const RecommendList = () => {
           Không có gợi ý nào.
         </Typography>
       )}
-   </>
+      <Box
+
+                          sx={{
+                              backgroundColor: "indianred",
+                              display: "flex",
+                              alignItems: "center",
+                              paddingLeft: "20px",
+                              height: "24px",
+                              marginTop:"auto",
+                              justifyContent:"space-around"
+                          }}
+                      >
+                          {/* <FontAwesomeIcon  color="white" /> */}
+                          <Typography
+                              sx={{
+                                  paddingLeft: "5px",
+                                  fontFamily: "sans-serif",
+                                  fontSize: "16px",
+                                  fontWeight: 400,
+                                  color: "white"
+                              }}
+                          >
+                              Đã học
+                          </Typography>
+                          {dataGroup.map((group: SubjectGroupRequirmentDTO,index)=>(
+<Typography
+           key={index}
+           sx={{
+                                  paddingLeft: "5px",
+                                  fontFamily: "sans-serif",
+                                  fontSize: "16px",
+                                  fontWeight: 400,
+                                  color: "white"
+                              }}
+                          >
+                              Nhóm {group.subjectGroup.id}: {group.learnedCredit}/{group.requirementCredit}
+                          </Typography>
+                          ))}
+                            
+                      </Box>
+   </Box>
   );
 };
 

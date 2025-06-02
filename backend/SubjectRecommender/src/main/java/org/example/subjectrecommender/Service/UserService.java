@@ -54,5 +54,11 @@ public class UserService {
         }
         return updated;
     }
+    public List<User> getUserList(){
+        return userRepository.findAll();
+    }
+    public void saveAll(List<User> userList) {
+        userRepository.saveAll(userList);
+    }
 
 }

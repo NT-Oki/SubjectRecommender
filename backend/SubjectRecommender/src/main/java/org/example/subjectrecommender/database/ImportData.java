@@ -9,6 +9,7 @@ import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Service.*;
 import org.example.subjectrecommender.util.ConvertToUnicode;
 import org.example.subjectrecommender.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -20,24 +21,21 @@ import java.util.*;
 
 @Service
 public class ImportData {
+    @Autowired
     SubjectGroupService subjectGroupService;
+    @Autowired
     SubjectService subjectService;
+    @Autowired
     PrerequisiteService prerequisiteService;
+    @Autowired
     CurriculumVersionService curriculumVersionService;
+    @Autowired
     CurriculumCourseService curriculumCourseService;
+    @Autowired
     UserService userService;
+    @Autowired
     ScoreService scoreService;
-    public ImportData(SubjectGroupService subjectGroupService, SubjectService subjectService, PrerequisiteService prerequisiteService,
-                      CurriculumVersionService curriculumVersionService, CurriculumCourseService curriculumCourseService,
-                      UserService userService, ScoreService scoreService) {
-        this.subjectGroupService = subjectGroupService;
-        this.subjectService = subjectService;
-        this.prerequisiteService = prerequisiteService;
-        this.curriculumVersionService = curriculumVersionService;
-        this.curriculumCourseService = curriculumCourseService;
-        this.userService = userService;
-        this.scoreService = scoreService;
-    }
+
 
     public Sheet getSheet(InputStream inputStream, String sheetName) throws IOException {
        // inputStream=new FileInputStream(new File("D:\\3.study\\TIỂU LUẬN\\data.xlsx"));
@@ -215,6 +213,17 @@ public class ImportData {
     }
     public void importUtility(){
         scoreService.updateAllUtility();
+    }
+    public void updateCurriculumVersionForUser(String curriculumId) {
+        List<User> userList = userService.getUserList();
+
+        CurriculumVersion curriculumVersion = curriculumVersionService.getById(curriculumId);
+        for(User user : userList){
+            user.setCurriculumVersion(curriculumVersion);
+        }
+        userService.saveAll(userList);
+        System.out.println("Đã cập nhật thành công CurriculumVersion: "+userList.size());
+
     }
 
 

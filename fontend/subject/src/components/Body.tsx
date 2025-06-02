@@ -48,7 +48,7 @@ const Body = () => {
                 sx={{
                     backgroundColor: "red",
                     // height: "150px",
-                    width: "19%",
+                    width: "18%",
                     marginLeft: "15px",
                 }}
             >

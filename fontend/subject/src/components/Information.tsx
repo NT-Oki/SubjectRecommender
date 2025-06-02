@@ -392,8 +392,10 @@ const Information = () => {
                             }
                         ></FontAwesomeIcon> Gợi ý môn học
                     </Button>
+                    
 
                 </Box>
+                
             </Box>
             {
                 !hiddenChangePass && (
