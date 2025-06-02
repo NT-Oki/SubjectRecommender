@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Select, MenuItem, Pagination } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -17,7 +17,6 @@ const StudentAdmin = () => {
         major: string;
         enrollmentYear: number; // Lưu ý: bạn có viết sai chính tả, nên giữ nguyên hoặc sửa lại
     }
-
 
     const [data, setData] = useState<UserDTO[] | null>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -203,7 +202,7 @@ const StudentAdmin = () => {
                                 },
                             }}
                         >
-                            <Typography flex={0.2}>{index+1}</Typography>
+                            <Typography flex={0.2}>{index + 1}</Typography>
                             <Typography flex={0.7}>{user.id}</Typography>
                             <Typography flex={1}>{user.lastName}</Typography>
                             <Typography flex={0.5}>{user.name}</Typography>

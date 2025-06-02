@@ -10,13 +10,13 @@ import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 const ScoreAdmin = () => {
-interface UserDTO {
-  id: string;
-  lastName: string;
-  name: string;
-  major: string;
-  enrollmentYear : number; // Lưu ý: bạn có viết sai chính tả, nên giữ nguyên hoặc sửa lại
-}
+    interface UserDTO {
+        id: string;
+        lastName: string;
+        name: string;
+        major: string;
+        enrollmentYear: number; // Lưu ý: bạn có viết sai chính tả, nên giữ nguyên hoặc sửa lại
+    }
 
     interface SubjectGroup {
         id: string;
@@ -40,10 +40,6 @@ interface UserDTO {
         utility: number;
         preSubjects: Subject[];
     }
-
-    type DataType = {
-        [key: string]: Score[];
-    };
 
     const [data, setData] = useState<Score[] | null>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -116,22 +112,22 @@ interface UserDTO {
                 }}
             >
             </Box> */}
-              <Box display="flex" gap={2} mb={2} mt={2} justifyContent={"center"}>
-        <TextField label="Mã SV" size="small" />
-        <Select defaultValue="" displayEmpty size="small">
-          <MenuItem value="">Học kỳ</MenuItem>
-          <MenuItem value="1">1</MenuItem>
-          <MenuItem value="2">2</MenuItem>
-        </Select>
-        <TextField label="Môn" size="small" />
-        <Select defaultValue="" displayEmpty size="small">
-          <MenuItem value="">Trạng thái</MenuItem>
-          <MenuItem value="Đạt">Đạt</MenuItem>
-          <MenuItem value="Không đạt">Không đạt</MenuItem>
-        </Select>
-        <Button variant="contained">Tìm</Button>
-        <Button variant="outlined">Xuất Excel</Button>
-      </Box>
+            <Box display="flex" gap={2} mb={2} mt={2} justifyContent={"center"}>
+                <TextField label="Mã SV" size="small" />
+                <Select defaultValue="" displayEmpty size="small">
+                    <MenuItem value="">Học kỳ</MenuItem>
+                    <MenuItem value="1">1</MenuItem>
+                    <MenuItem value="2">2</MenuItem>
+                </Select>
+                <TextField label="Môn" size="small" />
+                <Select defaultValue="" displayEmpty size="small">
+                    <MenuItem value="">Trạng thái</MenuItem>
+                    <MenuItem value="Đạt">Đạt</MenuItem>
+                    <MenuItem value="Không đạt">Không đạt</MenuItem>
+                </Select>
+                <Button variant="contained">Tìm</Button>
+                <Button variant="outlined">Xuất Excel</Button>
+            </Box>
 
             <Box
                 sx={{
@@ -232,12 +228,12 @@ interface UserDTO {
                             }}
                         >
                             <Typography flex={0.2}>{index + 1}</Typography>
-                             <Tooltip
+                            <Tooltip
                                 title={
                                     <Box>
                                         <div><strong>Số tín chỉ:</strong> {score.subject.credit}</div>
                                         <div><strong>Nhóm môn học:</strong> {score.subject.subjectGroup.id}</div>
-                                        <div><strong>Môn tiên quyết:</strong> {score.preSubjects.map((s:Subject)=>s.id).join(', ')}</div>
+                                        <div><strong>Môn tiên quyết:</strong> {score.preSubjects.map((s: Subject) => s.id).join(', ')}</div>
                                     </Box>
                                 }
                                 arrow
@@ -279,13 +275,13 @@ interface UserDTO {
                     </Fragment>)
                 )) : null
             }
-             <Box display="flex" justifyContent="center" mt={2}>
-            <Pagination count={160} page={10}  color="primary" />
-          </Box>
+            <Box display="flex" justifyContent="center" mt={2}>
+                <Pagination count={160} page={10} color="primary" />
+            </Box>
 
-          <Typography mt={1} variant="body2" align="right">
-            Tổng số: 16.000 bản ghi | Trang {10}/160
-          </Typography>
+            <Typography mt={1} variant="body2" align="right">
+                Tổng số: 16.000 bản ghi | Trang {10}/160
+            </Typography>
         </>
 
         //    end Body---------------------------------

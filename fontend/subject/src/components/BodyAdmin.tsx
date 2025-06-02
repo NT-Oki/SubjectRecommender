@@ -3,66 +3,12 @@ import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
-import axios from 'axios';
-import { useEffect, useState } from "react";
-import API_ENDPOINTS from "../config/apiConfig";
 import InformationAdmin from "./InformationAdmin"
 import { Route, Routes } from "react-router-dom"
 import ScoreAdmin from "./ScoreAdmin"
 import SubjectAdmin from "./SubjectAdmin"
 import StudentAdmin from "./StudentAdmin"
 const BodyAdmin = () => {
-    interface SubjectGroup {
-        id: string;
-        groupName: string;
-    }
-    interface Subject {
-        id: string;
-        subjectName: string;
-        credit: number;
-        subjectGroup: SubjectGroup;
-    }
-
-    interface Score {
-        id: number;
-        userId: string;
-        subject: Subject;
-        semester: number;
-        score: number;
-        passed: number;
-        year: number;
-        utility: number;
-    }
-
-    type DataType = {
-        [key: string]: Score[];
-    };
-
-    const [data, setData] = useState<DataType | null>(null);
-    useEffect(() => {
-        const fetchUserScore = async () => {
-            const token = sessionStorage.getItem("token");
-            const userId = sessionStorage.getItem("userId");
-
-            try {
-                const response = await axios.get(API_ENDPOINTS.SCORE, {
-                    params: {
-                        userId: `${userId}`,
-                    },
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log(response.data)
-                setData(response.data);
-            } catch (error) {
-                console.error("Lỗi khi lấy thông tin điểm user:", error);
-            }
-        };
-
-        fetchUserScore();
-    }, []);
-
     return (
        // body--------------------------------------
         <Box

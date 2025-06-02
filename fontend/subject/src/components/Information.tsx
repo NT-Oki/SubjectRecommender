@@ -3,7 +3,6 @@ import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCogs, faCircleExclamation, faXmark, faLightbulb, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
-
 import API_ENDPOINTS from "../config/apiConfig";
 import axios from 'axios';
 import { useEffect, useState } from "react";

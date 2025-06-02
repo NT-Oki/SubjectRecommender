@@ -1,17 +1,16 @@
-import { Box, Button, Typography, RadioGroup, FormControlLabel, Radio, Input, FormControl, FormHelperText, } from "@mui/material"
+import { Box, Button, Typography, Input, FormControl, FormHelperText, } from "@mui/material"
 import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCogs, faCircleExclamation, faXmark, faLightbulb, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
-
+import { faCogs, faCircleExclamation, faXmark, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 import API_ENDPOINTS from "../config/apiConfig";
 import axios from 'axios';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const menuItems = [
-  { id: "score", label: "Quản lý điểm" },
-  { id: "student", label: "Quản lý sinh viên" },
-  { id: "subject", label: "Quản lý môn học" },
+    { id: "score", label: "Quản lý điểm" },
+    { id: "student", label: "Quản lý sinh viên" },
+    { id: "subject", label: "Quản lý môn học" },
 ];
 
 const InformationAdmin = () => {
@@ -20,7 +19,7 @@ const InformationAdmin = () => {
         lastName: string;
         name: string;
         major: string;
-        enrollmentYear : number;
+        enrollmentYear: number;
     }
     const token = sessionStorage.getItem("token");
     const userId = sessionStorage.getItem("userId");
@@ -37,20 +36,17 @@ const InformationAdmin = () => {
     const [isHiddenNoticeChangePassWord, setIsHiddenNoticeChangePassWord] = useState(true);
     const [erroChangePassWord, setErroChangePassWord] = useState("");
     const [statusChangePassWord, setStatusChangePassWord] = useState<Number>(0);
-
-      const [selectedItem, setSelectedItem] = useState("score");
-
-     const selectItem = (s:string)=>{
+    const [selectedItem, setSelectedItem] = useState("score");
+    const selectItem = (s: string) => {
         setSelectedItem(s);
-        if(s==="score"){
+        if (s === "score") {
             navigate("/admin/score")
-        }else if(s==="subject"){
+        } else if (s === "subject") {
             navigate("/admin/subject")
-        }else if(s==="student"){
+        } else if (s === "student") {
             navigate("/admin/student")
-        }  
-
         }
+    }
     useEffect(() => {
         const fetchUserScore = async () => {
             try {
@@ -66,7 +62,6 @@ const InformationAdmin = () => {
                 setUser(response.data);
                 // setHasToken(true);
             } catch (error: any) {
-
                 console.error("Lỗi khi lấy thông tin user:", error);
                 // if (error.response?.status === 401 || error.response?.status === 403) {
                 //     sessionStorage.removeItem("token");
@@ -76,7 +71,7 @@ const InformationAdmin = () => {
                 // }
             }
         };
-       
+
 
         fetchUserScore();
     }, []);
@@ -84,7 +79,6 @@ const InformationAdmin = () => {
     const checkPreNewPassword = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPreNewPassWord(value);
-
         if (newPassWord === "") {
             setPreNewPassWordErro("Vui lòng nhập mật khẩu trước");
             setIsNewPassWordOK(false);
@@ -354,41 +348,41 @@ const InformationAdmin = () => {
                         height: "100%"
                     }}
                 >
-                    {menuItems.map((item)=>(
-                         <Box
-                         key={item.id}
-                         onClick={()=>selectItem(item.id)}
-                         sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            color: selectedItem === item.id ? "gray" : "#37BD74",
-                            backgroundColor: selectedItem === item.id ? "ButtonShadow" : "none",
-                            boxShadow: selectedItem === item.id ? "inset 4px 0 0 0 #2e7d32" : "none",
-                            paddingTop: "5px",
-                            alignItems: "center",
-                            borderBottom:"1px solid grey",
-                            cursor:"pointer",
-                            ":hover":{
-                                backgroundColor:"ButtonHighlight",
-                                transition: "background-color 0.3s ease",
-                                color:"gray"
-                            },
-                            
-                        }}
-                    >
-                        <Typography
+                    {menuItems.map((item) => (
+                        <Box
+                            key={item.id}
+                            onClick={() => selectItem(item.id)}
                             sx={{
-                                fontFamily: "sans-serif",
-                                fontSize: "16px",
-                                fontWeight: 400,
-                                marginLeft: "10px",
-                                
-                                
+                                display: "flex",
+                                flexDirection: "row",
+                                color: selectedItem === item.id ? "gray" : "#37BD74",
+                                backgroundColor: selectedItem === item.id ? "ButtonShadow" : "none",
+                                boxShadow: selectedItem === item.id ? "inset 4px 0 0 0 #2e7d32" : "none",
+                                paddingTop: "5px",
+                                alignItems: "center",
+                                borderBottom: "1px solid grey",
+                                cursor: "pointer",
+                                ":hover": {
+                                    backgroundColor: "ButtonHighlight",
+                                    transition: "background-color 0.3s ease",
+                                    color: "gray"
+                                },
+
                             }}
                         >
-                            {item.label}
-                        </Typography>
-                    </Box>
+                            <Typography
+                                sx={{
+                                    fontFamily: "sans-serif",
+                                    fontSize: "16px",
+                                    fontWeight: 400,
+                                    marginLeft: "10px",
+
+
+                                }}
+                            >
+                                {item.label}
+                            </Typography>
+                        </Box>
 
                     ))}
                 </Box>
@@ -585,7 +579,7 @@ const InformationAdmin = () => {
                                 width: "100%", // chỉnh rộng 100% của popup
                                 p: 1,
                             }}>
-                                <FontAwesomeIcon icon={statusChangePassWord==1? faCircleCheck: faCircleExclamation} color="orange" style={{ fontSize: '30px' }} />
+                                <FontAwesomeIcon icon={statusChangePassWord == 1 ? faCircleCheck : faCircleExclamation} color="orange" style={{ fontSize: '30px' }} />
                                 <Typography sx={{ fontSize: "20px", fontFamily: "sans-serif" }}>
                                     {erroChangePassWord}
                                 </Typography>
