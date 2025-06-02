@@ -71,7 +71,7 @@ const Login = () => {
             })
             setHidenForgotPassWord(true);
             setHiddenTokenForm(false);
-
+            console.log(res.data);
         }catch(err:any){
           setUserIdForgotErro(err.response.data)
         }finally{

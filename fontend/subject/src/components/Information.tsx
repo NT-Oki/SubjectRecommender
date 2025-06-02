@@ -1,4 +1,4 @@
-import { Box, Button, Typography, RadioGroup, FormControlLabel, Radio, Input, FormControl, FormHelperText, CircularProgress, } from "@mui/material"
+import { Box, Button, Typography, RadioGroup, FormControlLabel, Radio, Input, FormControl, FormHelperText, } from "@mui/material"
 import { FaUser } from "react-icons/fa";
 import { TbLogout } from "react-icons/tb";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -29,7 +29,7 @@ const Information = () => {
     const [preNewPassWordErro, setPreNewPassWordErro] = useState("");
     const [isNewPassWordOK, setIsNewPassWordOK] = useState(false);
     const [isPreNewPassWordOK, setIsPreNewPassWordOK] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [isHiddenNoticeChangePassWord, setIsHiddenNoticeChangePassWord] = useState(true);
     const [erroChangePassWord, setErroChangePassWord] = useState("");
     const [statusChangePassWord, setStatusChangePassWord] = useState<Number>(0);

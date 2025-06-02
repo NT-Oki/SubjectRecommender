@@ -8,7 +8,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { useNavigate, useParams } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const RecommendList = () => {
   interface SubjectGroup {
