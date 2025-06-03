@@ -8,7 +8,7 @@ import "@fontsource/roboto/latin.css"
 import nonglam from '../assets/nonglam.jpg';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCogs, faCircleExclamation, faXmark, faLightbulb, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { faCircleExclamation, faXmark, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 const Login = () => {
     const [userID, setUserID] = useState("");
     const [password, setPassword] = useState("");
@@ -47,13 +47,19 @@ const Login = () => {
             const token = response.data.token;
             const userId = response.data.userId;
             const exp = response.data.exp;
+            const role = response.data.role;
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("userId", userId);
             sessionStorage.setItem("exp", exp);
-
+            sessionStorage.setItem("role",role);
             alert("Đăng nhập thành công!");
             // Ví dụ chuyển trang
-            navigate("/home/listscore")
+            if(role==1){
+                navigate("/admin/score");
+            }else if(role==2){
+                navigate("/home/listscore");
+            }
+
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                alert(error.response?.data);
@@ -71,7 +77,7 @@ const Login = () => {
             })
             setHidenForgotPassWord(true);
             setHiddenTokenForm(false);
-
+            console.log(res.data);
         }catch(err:any){
           setUserIdForgotErro(err.response.data)
         }finally{
@@ -152,6 +158,7 @@ const Login = () => {
                     userId: userIdForgot,
                 }, 
                 );
+                console.log(res.data);
                 setErroChangePassWord("Thay đổi mật khẩu thành công")
                 setStatusChangePassWord(1);
                 setHiddenChangePass(true);
@@ -172,6 +179,7 @@ const Login = () => {
                 token:tokenForgot,
                 userId: userIdForgot,
             });
+            console.log(res.data);
             setHiddenTokenForm(true);
             setHiddenChangePass(false);
         }catch(err:any){

@@ -13,4 +13,5 @@ public class CurriculumCourseService {
     public void save(CurriculumCourse curriculumCourse) {
         curriculumCourseRepository.save(curriculumCourse);
     }
+
 }

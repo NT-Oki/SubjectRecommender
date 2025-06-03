@@ -22,6 +22,11 @@ public class User {
     private String password;
     @Column(name = "enrollment_year")
     private int enrollmentYear;
+    @Column(name="role")
+    private int role;//1 admin 2 student
+    @ManyToOne
+    @JoinColumn(name = "curriculum_id")
+    private CurriculumVersion curriculumVersion;
 
 
 

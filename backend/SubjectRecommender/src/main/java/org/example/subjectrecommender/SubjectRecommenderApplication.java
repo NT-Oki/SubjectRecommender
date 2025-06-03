@@ -1,6 +1,7 @@
 package org.example.subjectrecommender;
 
 import org.example.subjectrecommender.Service.UserService;
+import org.example.subjectrecommender.database.ImportData;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -16,6 +17,9 @@ public class SubjectRecommenderApplication {
 //        UserService userService = context.getBean(UserService.class);
 //        int updated=userService.updatePasswordByNameorLastName("Đ", "đ");
 //        System.out.println(updated);
+//        ImportData importData= context.getBean(ImportData.class);
+//        importData.updateCurriculumVersionForUser("7480201_2020");
+//        importData.updateRoleForUser(2);//student
 
 
 

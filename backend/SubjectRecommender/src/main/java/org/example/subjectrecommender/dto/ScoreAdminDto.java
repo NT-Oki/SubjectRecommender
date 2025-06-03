@@ -8,9 +8,9 @@ import org.example.subjectrecommender.Model.Subject;
 import java.util.List;
 
 @Data
-public class ScoreResponseDTO {
+public class ScoreAdminDto {
     private Long id;
-    private String userId;
+    private UserDTO user;
     private Subject subject;
     private int semester;
     private float score;
@@ -19,9 +19,9 @@ public class ScoreResponseDTO {
     private float utility;
     private List<Subject> preSubjects;
 
-    public ScoreResponseDTO(Score score, List<Subject> preSubjects) {
+    public ScoreAdminDto(Score score, List<Subject> preSubjects) {
         this.id = score.getId();
-        this.userId = score.getUser().getId();
+        this.user = new UserDTO(score.getUser());
         this.subject = score.getSubject();
         this.semester = score.getSemester();
         this.score = score.getScore();

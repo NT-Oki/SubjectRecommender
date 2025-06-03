@@ -23,10 +23,17 @@ const RecommendList = () => {
   interface SubjectRecommend {
     subject: Subject;
     utility: number;
+    preSubjects: Subject[];
+  }
+  interface SubjectGroupRequirmentDTO{
+    subjectGroup : SubjectGroup;
+    requirementCredit: number;
+    learnedCredit: number;
   }
   const navigate=useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<SubjectRecommend[]>([]);
+  const [dataGroup, setDataGroup] = useState<SubjectGroupRequirmentDTO[]>([]);
      const { semester } = useParams();
 
   useEffect(() => {
@@ -45,7 +52,8 @@ const RecommendList = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setData(response.data);
+        setData(response.data.subjectList);
+        setDataGroup(response.data.learnedSubjects);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách gợi ý:", error);
       } finally {
@@ -59,7 +67,7 @@ const RecommendList = () => {
     navigate("/home/listscore")
   }
   return (
-   <>
+   <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
       {/* Header chương trình đào tạo */}
       <Box
         sx={{
@@ -71,6 +79,7 @@ const RecommendList = () => {
           position: "sticky",
           top: 0,
           zIndex: 12,
+         
         }}
       >
         <GiTwirlyFlower />
@@ -150,7 +159,7 @@ const RecommendList = () => {
         <Typography flex={2}>Tên môn học</Typography>
         <Typography flex={0.5}>Số tín chỉ</Typography>
         <Typography flex={1.2}>Môn tiên quyết</Typography>
-        <Typography flex={0.8}>Môn bắt buộc</Typography>
+        <Typography flex={0.8}>Nhóm môn học</Typography>
         <Typography flex={1}>Chỉ số ưu tiên</Typography>
       </Box>
 
@@ -190,9 +199,12 @@ const RecommendList = () => {
             <Typography flex={1}>{item.subject?.id}</Typography>
             <Typography flex={2}>{item.subject?.subjectName}</Typography>
             <Typography flex={0.5}>{item.subject?.credit}</Typography>
-            <Typography flex={1.2}>aaaa</Typography>
+            <Typography flex={1.2}>
+              {item.preSubjects.map((s : Subject)=>s.id
+              ).join(`, `)
+              }</Typography>
             <Typography flex={0.8}>
-              {item.subject.subjectGroup.id === "BB" ? "x" : ""}
+              {item.subject.subjectGroup.id}
             </Typography>
             <Typography flex={1}>{item.utility}</Typography>
           </Box>
@@ -203,7 +215,47 @@ const RecommendList = () => {
           Không có gợi ý nào.
         </Typography>
       )}
-   </>
+      <Box
+
+                          sx={{
+                              backgroundColor: "indianred",
+                              display: "flex",
+                              alignItems: "center",
+                              paddingLeft: "20px",
+                              height: "24px",
+                              marginTop:"auto",
+                              justifyContent:"space-around"
+                          }}
+                      >
+                          {/* <FontAwesomeIcon  color="white" /> */}
+                          <Typography
+                              sx={{
+                                  paddingLeft: "5px",
+                                  fontFamily: "sans-serif",
+                                  fontSize: "16px",
+                                  fontWeight: 400,
+                                  color: "white"
+                              }}
+                          >
+                              Đã học
+                          </Typography>
+                          {dataGroup.map((group: SubjectGroupRequirmentDTO,index)=>(
+<Typography
+           key={index}
+           sx={{
+                                  paddingLeft: "5px",
+                                  fontFamily: "sans-serif",
+                                  fontSize: "16px",
+                                  fontWeight: 400,
+                                  color: "white"
+                              }}
+                          >
+                              Nhóm {group.subjectGroup.id}: {group.learnedCredit}/{group.requirementCredit}
+                          </Typography>
+                          ))}
+                            
+                      </Box>
+   </Box>
   );
 };
 

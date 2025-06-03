@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SubjectGroupRepository extends JpaRepository<SubjectGroup, String> {
 
+
 }

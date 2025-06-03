@@ -1,15 +1,16 @@
-import { Box } from "@mui/material"
+import { Box} from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
-import ListScore from "./ListScore"
-import { Routes, Route } from "react-router-dom";
-import Information from "./Information"
-import RecommendList from "./RecommendList"
-const Body = () => {
+import InformationAdmin from "./InformationAdmin"
+import { Route, Routes } from "react-router-dom"
+import ScoreAdmin from "./ScoreAdmin"
+import SubjectAdmin from "./SubjectAdmin"
+import StudentAdmin from "./StudentAdmin"
+const BodyAdmin = () => {
     return (
-        // body--------------------------------------
+       // body--------------------------------------
         <Box
             sx={{
                 display: "flex",
@@ -26,13 +27,15 @@ const Body = () => {
                     width: "80%",
                     height: "500px",
                     overflowY: "auto",
-                    overflowX: "hidden"
+                    overflowX:"hidden"
                 }}
             >
-                <Routes>
-                    <Route path="listscore" element={<ListScore />} />
-                    <Route path="recommend/:semester" element={<RecommendList />} />
-                </Routes>
+                    <Routes>
+        <Route path="score" element={<ScoreAdmin />} />
+        <Route path="subject" element={<SubjectAdmin />} />
+        <Route path="student" element={<StudentAdmin/>} />
+        
+      </Routes>
             </Box>
             {/* end left------------------------------------------ */}
 
@@ -45,12 +48,11 @@ const Body = () => {
                     marginLeft: "15px",
                 }}
             >
-                <Information />
+            <InformationAdmin />
             </Box>
             {/* endright----------------------- */}
         </Box>
         //    end Body---------------------------------
-
     )
 }
-export default Body;
+export default BodyAdmin;
