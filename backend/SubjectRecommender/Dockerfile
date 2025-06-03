@@ -24,6 +24,8 @@ COPY --from=builder /app/build/libs/app-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port (optional, if you use port like 8080)
 EXPOSE 8080
+ENV SPRING_PROFILES_ACTIVE=prod
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
+#ENTRYPOINT ["sh", "-c", "java -Dserver.port=$PORT -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE -jar app.jar"]
