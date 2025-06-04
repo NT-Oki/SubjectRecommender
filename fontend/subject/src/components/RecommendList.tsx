@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button } from "@mui/material";
+import { Box, Typography, CircularProgress, Button, Pagination } from "@mui/material";
 import "@fontsource/quicksand/latin.css";
 import "@fontsource/roboto-serif/latin.css";
 import "@fontsource/roboto/latin.css";
@@ -35,11 +35,16 @@ const RecommendList = () => {
   const [data, setData] = useState<SubjectRecommend[]>([]);
   const [dataGroup, setDataGroup] = useState<SubjectGroupRequirmentDTO[]>([]);
      const { semester } = useParams();
+             const [page, setPage] = useState(1);
+    const pageSize = 10;
+    const [total, setTotal] = useState(0);
+          const token = sessionStorage.getItem("token");
+      const userId = sessionStorage.getItem("userId");
 
   useEffect(() => {
     const fetchRecommendList = async () => {
-      const token = sessionStorage.getItem("token");
-      const userId = sessionStorage.getItem("userId");
+
+
         
       try {
         setLoading(true);
@@ -47,6 +52,8 @@ const RecommendList = () => {
           params: {
             userId: userId || "",
             semester: `${semester}`,
+             page: page - 1,
+                    size: pageSize,
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -54,6 +61,7 @@ const RecommendList = () => {
         });
         setData(response.data.subjectList);
         setDataGroup(response.data.learnedSubjects);
+        setTotal(response.data.total)
       } catch (error) {
         console.error("Lỗi khi lấy danh sách gợi ý:", error);
       } finally {
@@ -62,7 +70,7 @@ const RecommendList = () => {
     };
 
     fetchRecommendList();
-  }, [semester]);
+  }, [semester,page, pageSize]);
   const getScoreList=()=>{
     navigate("/home/listscore")
   }
@@ -255,6 +263,17 @@ const RecommendList = () => {
                           ))}
                             
                       </Box>
+                             <Box display="flex" justifyContent="center" mt={2}>
+                                          <Pagination
+                                              count={Math.ceil(total / pageSize)}
+                                              page={page} color="primary"
+                                              onChange={(_, value) => setPage(value)}
+                                          />
+                                      </Box>
+                      
+                                      <Typography mt={1} variant="body2" align="right">
+                                          Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
+                                      </Typography>
    </Box>
   );
 };

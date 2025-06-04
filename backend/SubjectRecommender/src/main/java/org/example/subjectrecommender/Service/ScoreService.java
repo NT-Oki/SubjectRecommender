@@ -1,6 +1,15 @@
 package org.example.subjectrecommender.Service;
 
+import ch.qos.logback.core.pattern.Converter;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.subjectrecommender.Model.Prerequisite;
 import org.example.subjectrecommender.Model.Score;
 import org.example.subjectrecommender.Model.Subject;
@@ -10,12 +19,14 @@ import org.example.subjectrecommender.Repository.ScoreRepository;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -92,6 +103,56 @@ public List<ScoreAdminDto> getAll(){
             }
             return scoreResponseDTOList;
 }
+//cho admin
+public Page<ScoreAdminDto> getAllScorePageWithFilterUsingQuery(
+        String userId, String subjectName, Integer semester, String status, Pageable pageable) {
+    Integer passed = null;
+    if ("1".equalsIgnoreCase(status)) passed = 1;
+    else if ("0".equalsIgnoreCase(status)) passed = 0;
+
+    Page<Score> scorePage = scoreRepository.findByFilters(userId, subjectName, semester, passed, pageable);
+
+    List<ScoreAdminDto> dtoList = new ArrayList<>();
+    for (Score score : scorePage.getContent()) {
+        List<Subject> preSubjects = prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(score.getSubject().getId());
+        dtoList.add(new ScoreAdminDto(score, preSubjects));
+    }
+    return new PageImpl<>(dtoList, pageable, scorePage.getTotalElements());
+}
+        public ByteArrayInputStream exportScoreToExcel(List<ScoreAdminDto> scores) throws IOException {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Scores");
+
+                Row header = sheet.createRow(0);
+                header.createCell(0).setCellValue("STT");
+                header.createCell(1).setCellValue("Mã môn học");
+                header.createCell(2).setCellValue("Tên môn học");
+                header.createCell(3).setCellValue("MSSV");
+                header.createCell(4).setCellValue("Học kỳ");
+                header.createCell(5).setCellValue("Năm học");
+                header.createCell(6).setCellValue("Điểm");
+                header.createCell(7).setCellValue("Kết quả");
+
+                int rowIdx = 1;
+                for (ScoreAdminDto dto : scores) {
+                    Row row = sheet.createRow(rowIdx++);
+                    row.createCell(0).setCellValue(rowIdx-1);
+                    row.createCell(1).setCellValue(dto.getSubject().getId());
+                    row.createCell(2).setCellValue(dto.getSubject().getSubjectName());
+                    row.createCell(3).setCellValue(dto.getUser().getId());
+                    row.createCell(4).setCellValue(dto.getSemester());
+                    row.createCell(5).setCellValue(dto.getYear()+" - "+(dto.getYear()+1));
+                    row.createCell(6).setCellValue(dto.getScore());
+                    row.createCell(7).setCellValue(dto.getPassed()==1 ? "Passed" : "Failed");
+                }
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                workbook.write(out);
+                return new ByteArrayInputStream(out.toByteArray());
+            }
+        }
+
+
 
 
 
