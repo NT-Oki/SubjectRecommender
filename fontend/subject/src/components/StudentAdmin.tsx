@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, TextField, Select, MenuItem, Pagination } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Pagination } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -24,7 +24,7 @@ const StudentAdmin = () => {
     const pageSize = 10;
     const [total, setTotal] = useState(0);
     const [searchUserId, setSearchUserId] = useState("");
-    const [searchYear, setSearchYear] = useState<Number>(null);
+    const [searchYear, setSearchYear] = useState<Number>();
     const [searchName, setSearchName] = useState("");
     const fetchUserScore = async () => {
     
