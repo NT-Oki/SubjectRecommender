@@ -16,8 +16,14 @@ const API_ENDPOINTS = {
   FORGOTPASSWORD: `${AUTH_URL}/forgot-password`,
   CHECKTOKEN: `${AUTH_URL}/check-token`,
   ADMIN:{
-    SCORE: `${ADMIN_URL}/scores`,
-    STUDENT: `${ADMIN_URL}/students`,
+    SCORE: {
+      LISTSCORE:`${ADMIN_URL}/scores`,
+      EXPORT:`${ADMIN_URL}/scores/export`,
+    },
+    STUDENT: {
+      LISTUSER:`${ADMIN_URL}/students`,
+      EXPORT:`${ADMIN_URL}/students/export`,
+    }
   }
 };
 

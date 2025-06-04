@@ -6,6 +6,9 @@ import org.example.subjectrecommender.Repository.*;
 import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -136,17 +139,15 @@ public class MainService {
         return true;
     }
 //4
-public List<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester) {
+public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
     // Môn đã học và pass rồi
-    Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId,1)
+    Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
             .stream()
             .map(score -> score.getSubject().getId())
             .collect(Collectors.toSet());
-
     // Lấy toàn bộ HUItemsets và sắp xếp theo utility giảm dần
     List<HUItemset> huItemsets = HUItemsetRepository.findAll();
-    huItemsets.sort((a, b) -> Float.compare(b.getUtility(), a.getUtility())); // sắp xếp giảm dần
-
+    huItemsets.sort((a, b) -> Float.compare(b.getUtility(), a.getUtility())); // utility giảm dần
     // Tránh gợi ý trùng
     Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
     // Duyệt từng itemset theo utility giảm dần
@@ -159,28 +160,32 @@ public List<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semes
         double coverage= Math.round((double)countLearned/itemIds.size()*10)/10.0;
         System.out.println(coverage);
 //        if (coverage<0.5) continue;
-        for (String subjectId : huItemset.getItems()) {
-            //nếu nó chưa học hoặc chưa pass
-            if (!learnedSubjectIds.contains(subjectId)) {
+        for (String subjectId : itemIds) {
+
+            if (!learnedSubjectIds.contains(subjectId)) {  //nếu nó chưa học hoặc chưa pass
                 Subject subject = subjectRepository.findById(subjectId).orElse(null);
-                if (subject != null && isEligible(subject,semester, learnedSubjectIds)) {
-                    List<Subject> preSubjects =prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
-                    SubjectRecommendDTO subjectRecommendDTO=new SubjectRecommendDTO();
-                    subjectRecommendDTO.setSubject(subject);
-                    subjectRecommendDTO.setUtility(huItemset.getUtility());
-                    subjectRecommendDTO.setPreSubjects(preSubjects);
-                    suggestions.add(subjectRecommendDTO);
+                if (subject != null && isEligible(subject, semester, learnedSubjectIds)) {
+                    List<Subject> preSubjects = prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
+                    SubjectRecommendDTO dto = new SubjectRecommendDTO();
+                    dto.setSubject(subject);
+                    dto.setUtility(huItemset.getUtility());
+                    dto.setPreSubjects(preSubjects);
+                    suggestions.add(dto);
                 }
             }
         }
     }
-    if(suggestions.size()>10){
-        suggestions.stream().limit(10);
-    }
 
+    // Áp dụng phân trang thủ công
+    List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
+    int total = allSuggestions.size();
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), total);
+    List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
 
-    return new ArrayList<>(suggestions);
+    return new PageImpl<>(pageContent, pageable, total);
 }
+
     /**
      * Lấy ra danh sách DTO( nhóm môn học, số tín chỉ yêu cầu, số tín chỉ đã học
      */

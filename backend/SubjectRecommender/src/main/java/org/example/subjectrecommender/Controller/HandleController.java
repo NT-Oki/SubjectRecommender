@@ -9,6 +9,9 @@ import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,16 +46,22 @@ public class HandleController {
 
     }
     @GetMapping("/recommend")
-    public ResponseEntity<?> recomendSubject(@RequestParam int semester, @RequestParam String userId) throws IOException {
+    public ResponseEntity<?> recomendSubject(@RequestParam int semester, @RequestParam String userId, @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size) throws IOException {
 //        User user=userService.getByID(userId);
-        List<SubjectRecommendDTO> subjectRecommendDTOs=mainService.suggestSubjectsForUser(userId,semester);
+        Pageable pageable = PageRequest.of(page,size);
+        Page<SubjectRecommendDTO> subjectRecommendDTOs=mainService.suggestSubjectsForUser(userId,semester,pageable);
 //        if(result.size()>10){
 //            result=result.subList(0,10);
 //        }
+        List<SubjectRecommendDTO> recommendDTOS=subjectRecommendDTOs.getContent();
         List<SubjectGroupRequirementDTO> subjectGroupRequirementDTOs=mainService.getAllSubjectGroupRequirments(userId);
         Map<String, Object> response = new HashMap<String, Object>();
-        response.put("subjectList", subjectRecommendDTOs);
+        response.put("subjectList", recommendDTOS);
         response.put("learnedSubjects", subjectGroupRequirementDTOs);
+        response.put("total", (int)subjectRecommendDTOs.getTotalElements());
+        response.put("page", subjectRecommendDTOs.getNumber());
+        response.put("size", subjectRecommendDTOs.getSize());
        return ResponseEntity.ok().body(response);
     }
 }
