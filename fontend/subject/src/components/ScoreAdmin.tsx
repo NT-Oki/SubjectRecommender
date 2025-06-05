@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, FormLabel, RadioGroup, FormControlLabel, Radio, SelectChangeEvent } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -40,6 +40,14 @@ const ScoreAdmin = () => {
         utility: number;
         preSubjects: Subject[];
     }
+      interface ScoreAdd {
+        userId: string;
+        subjectId: string;
+        semester: number;
+        score: number;
+        year: number;
+    }
+    
 
     const [data, setData] = useState<Score[] | null>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,9 +59,20 @@ const ScoreAdmin = () => {
     const [searchSubjectName, setSearchSubjectName] = useState("");
     const [searchStatus, setSearchStatus] = useState("");
     const token = sessionStorage.getItem("token");
-    const [scoreUpdate, setScoreUpdate] = useState<Number>();
+    const [scoreUpdate, setScoreUpdate] = useState<number>(-1);
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [editScoreId, setEditScoreId] = useState<number | null>(null);
+    const [isAdd, setIsAdd] = useState<boolean>(false);
+    const [dataAdd, setDataAdd] = useState<ScoreAdd>({
+  userId: '',
+  subjectId: '',
+  semester: 0,
+  score: 0,
+  year: 0,
+});
+    
+
+
     const fetchUserScore = async () => {
 
         // const userId = sessionStorage.getItem("userId");
@@ -91,77 +110,94 @@ const ScoreAdmin = () => {
         setPage(1); // Quay về trang 1 khi tìm kiếm mới
         fetchUserScore();
     };
-   const handleExport = async () => {
-    try {
-        const res = await axios.get(API_ENDPOINTS.ADMIN.SCORE.EXPORT, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            responseType: 'blob', // ⚠️ BẮT BUỘC: để axios hiểu đây là file
-        });
+    const handleExport = async () => {
+        try {
+            const res = await axios.get(API_ENDPOINTS.ADMIN.SCORE.EXPORT, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                responseType: 'blob', //BẮT BUỘC: để axios hiểu đây là file
+            });
 
-        const blob = new Blob([res.data], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-        const url = window.URL.createObjectURL(blob);
+            const blob = new Blob([res.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            const url = window.URL.createObjectURL(blob);
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'scores.xlsx'; // Tên file khi lưu
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url); // Giải phóng URL sau khi xong
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'scores.xlsx'; // Tên file khi lưu
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url); // Giải phóng URL sau khi xong
 
-        alert("Xuất Excel thành công!");
-    } catch (err: any) {
-        alert(err.response?.data || "Lỗi khi xuất file");
-    }
+            alert("Xuất Excel thành công!");
+        } catch (err: any) {
+            alert(err.response?.data || "Lỗi khi xuất file");
+        }
+    };
+    const handleEdit = async (s: Score) => {
+        if (isEdit) {
+            const rounded = Math.round(scoreUpdate * 10) / 10;
+
+            try {
+                const res = await axios.put(API_ENDPOINTS.ADMIN.SCORE.SCORE, {
+                    id: s.id,
+                    score: rounded
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                s.score = rounded ?? s.score;
+                if (rounded >= 5) {
+                    s.passed = 1;
+                } else {
+                    s.passed = 0;
+                }
+                console.log(res.data);
+                setIsEdit(false);
+                setEditScoreId(null);
+                setScoreUpdate(-1);
+            } catch (err: any) {
+                console.log(err.response?.data || err.message);
+            }
+        } else {
+            setIsEdit(true);
+            setEditScoreId(s.id);
+            setScoreUpdate(s.score); // preload điểm cũ vào state nếu cần
+        }
+    };
+
+const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
+  const { name, value } = event.target;
+  setDataAdd(prev => ({
+    ...prev,
+    [name]: name === "semester" || name === "year" || name === "score" ? Number(value) : value
+  }));
 };
-const handleEdit = async (scoreId: number) => {
-  if (isEdit) {
-    try {
-      const scoreToUpdate = data?.find((s) => s.id === scoreId);
-      if (!scoreToUpdate) return;
 
-      const updatedScore = {
-        ...scoreToUpdate,
-        score: scoreUpdate ?? scoreToUpdate.score,
-      };
-
-      const res = await axios.put(API_ENDPOINTS.ADMIN.SCORE.SCORE, updatedScore, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // ✅ Cập nhật lại điểm ngay trong danh sách
-      setData(prevData =>
-        prevData?.map((s) =>
-          s.id === scoreId
-            ? {
-                ...s,
-                score:Number( updatedScore.score),
-                passed:+updatedScore.score>=5?1:0,
-              }
-            : s
-        ) || []
-      );
-
-      console.log(res.data);
-      setIsEdit(false);
-      setEditScoreId(null);
-    } catch (err: any) {
-      console.log(err.response?.data || err.message);
-    }
-  } else {
-    setIsEdit(true);
-    setEditScoreId(scoreId);
-    setScoreUpdate(data?.find((s) => s.id === scoreId)?.score); // preload điểm cũ vào state nếu cần
+ const handleAdd = async () => {
+  try {
+    const res = await axios.post(API_ENDPOINTS.ADMIN.SCORE.SCORE, dataAdd, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    alert("Thêm điểm thành công");
+    setDataAdd({
+      userId: '',
+      subjectId: '',
+      semester: 0,
+      score: 0,
+      year: 0,
+    });
+    fetchUserScore(); // Cập nhật lại danh sách
+  } catch (err: any) {
+    alert(err.response?.data || "Lỗi khi thêm điểm");
   }
 };
-
-
 
     return (
         // body--------------------------------------
@@ -192,19 +228,6 @@ const handleEdit = async (scoreId: number) => {
                     QUẢN LÝ ĐIỂM
                 </Typography>
             </Box>
-            {/* <Box
-                sx={{
-                    backgroundColor: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    paddingLeft: "30px",
-                    height: "15px",
-                    position: "sticky",
-                    top: 24,
-                    zIndex: 11,
-                }}
-            >
-            </Box> */}
             <Box display="flex" gap={2} mb={2} mt={2} justifyContent={"center"}>
                 <TextField label="Mã SV" size="small"
                     value={searchUserId}
@@ -235,6 +258,7 @@ const handleEdit = async (scoreId: number) => {
                     onClick={handleSearchClick}
                 >Tìm</Button>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
+                <Button sx={{backgroundColor:"orangered"}} variant="contained" onClick={()=>setIsAdd(true)}>Thêm</Button>
             </Box>
 
             <Box
@@ -288,26 +312,6 @@ const handleEdit = async (scoreId: number) => {
                 ) : data ? (data.map((score: Score, index: number) => (
 
                     <Fragment key={score.id}>
-                        {/* <Box
-                            sx={{
-                                backgroundColor: "#FFD968",
-                                display: "flex",
-                                alignItems: "center",
-                                paddingLeft: "30px",
-                                height: "30px"
-                            }}
-                        >
-                            <Typography
-                                sx={{
-                                    fontWeight: "bold",
-                                }}
-                            >
-                                {key}
-                            </Typography>
-
-
-                        </Box> */}
-
                         <Box
                             key={score?.id || index}
                             sx={{
@@ -370,30 +374,42 @@ const handleEdit = async (scoreId: number) => {
                             </Tooltip>
                             <Typography flex={0.4}>{score.semester}</Typography>
                             <Typography flex={0.7}>{score.year} - {score.year + 1}</Typography>
-                          <Typography flex={0.6}>
-    {editScoreId === score.id ? (
-        <TextField
-            size="small"
-            type="number"
-            value={scoreUpdate ?? score.score}
-            onChange={(e) => setScoreUpdate(Number(e.target.value))}
-                inputProps={{ min: 0, max: 10, step: 0.1 }}
-        />
-    ) : (score.score)}
-</Typography>
+                            <Typography flex={0.6}>
+                                {editScoreId === score.id ? (
+                                    <TextField
+                                        size="small"
+                                        type="number"
+                                        value={scoreUpdate ?? score.score}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            const parsed = Number(value);
+                                          if(value.length>5){
+                                                scoreUpdate ?? score.score
+                                            }else{
+                                                  if (!isNaN(parsed) && parsed < 11) {
+                                                setScoreUpdate(parsed);
+                                            }else{
+                                                scoreUpdate ?? score.score
+                                                }
+                                            }
+                                        }}
+                                        inputProps={{ min: 0, step: 0.1}}
+                                    />
+                                ) : (score.score)}
+                            </Typography>
 
                             <Typography flex={0.6}>{score.passed == 1 ? "Đạt" : "Không Đạt"}</Typography>
                             <Box
                                 flex={0.5}
                             >
-                                 <Button
-    onClick={() => handleEdit(score.id)}
-    size="small"
-    variant="outlined"
-    color={editScoreId === score.id ? "success" : "primary"}
-  >
-    <FontAwesomeIcon icon={editScoreId === score.id ? faCheck : faPenToSquare} />
-  </Button>
+                                <Button
+                                    onClick={() => handleEdit(score)}
+                                    size="small"
+                                    variant="outlined"
+                                    color={editScoreId === score.id ? "success" : "primary"}
+                                >
+                                    <FontAwesomeIcon icon={editScoreId === score.id ? faCheck : faPenToSquare} />
+                                </Button>
 
                             </Box>
                         </Box>
@@ -411,6 +427,54 @@ const handleEdit = async (scoreId: number) => {
             <Typography mt={1} variant="body2" align="right">
                 Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
             </Typography>
+            {isAdd?(
+                 <Dialog open={isAdd} onClose={()=>setIsAdd(false)} >
+      <DialogTitle>Thêm điểm môn học</DialogTitle>
+      <DialogContent>
+        <TextField label="User ID" name="userId" fullWidth margin="dense" value={dataAdd.userId} onChange={handleChange} />
+        <TextField label="Subject ID" name="subjectId" fullWidth margin="dense" value={dataAdd.subjectId} onChange={handleChange} />
+      <FormControl fullWidth margin="dense">
+  <FormLabel id="semester-label" sx={{ mb: 1 }}>
+    Học kỳ
+  </FormLabel>
+  <Box display="flex" justifyContent="center">
+    <RadioGroup
+      row
+      aria-labelledby="semester-label"
+      name="semester"
+      value={dataAdd.semester.toString()}
+      onChange={handleChange}
+    >
+      <FormControlLabel value="1" control={<Radio />} label="HK1" />
+      <FormControlLabel value="2" control={<Radio />} label="HK2" />
+    </RadioGroup>
+  </Box>
+</FormControl>
+       <FormControl fullWidth margin="dense">
+  <InputLabel id="year-label">Year</InputLabel>
+  <Select
+    labelId="year-label"
+    id="year-select"
+    name="year"
+    value={dataAdd?.year || ''}
+    label="Year"
+    onChange={handleChange}
+  >
+    <MenuItem value={2020}>2020 - 2021</MenuItem>
+    <MenuItem value={2021}>2021 - 2022</MenuItem>
+    <MenuItem value={2022}>2022 - 2023</MenuItem>
+  </Select>
+</FormControl>
+        <TextField label="Score" name="score" type="number" fullWidth margin="dense" value={dataAdd.score} onChange={handleChange}  />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={()=>setIsAdd(false)}>Hủy</Button>
+        <Button variant="contained" onClick={handleAdd}>Lưu</Button>
+      </DialogActions>
+    </Dialog>
+
+            ):null}
+           
         </>
 
         //    end Body---------------------------------

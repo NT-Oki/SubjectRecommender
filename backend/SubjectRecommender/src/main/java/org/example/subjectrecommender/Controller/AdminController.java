@@ -121,6 +121,17 @@ public class AdminController {
         }
 
     }
+    @PostMapping("/score")
+    public ResponseEntity<?> addScore(@RequestBody ScoreAdd dto){
+        try{
+            adminService.addScore(dto);
+            return ResponseEntity.ok("Thêm 1 score thành công ");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 score thất bại");
+        }
+
+
+    }
 
 
 }

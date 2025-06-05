@@ -1,4 +1,4 @@
-import { Box} from "@mui/material"
+import { Box } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -10,7 +10,7 @@ import SubjectAdmin from "./SubjectAdmin"
 import StudentAdmin from "./StudentAdmin"
 const BodyAdmin = () => {
     return (
-       // body--------------------------------------
+        // body--------------------------------------
         <Box
             sx={{
                 display: "flex",
@@ -27,15 +27,15 @@ const BodyAdmin = () => {
                     width: "80%",
                     height: "500px",
                     overflowY: "auto",
-                    overflowX:"hidden"
+                    overflowX: "hidden"
                 }}
             >
-                    <Routes>
-        <Route path="score" element={<ScoreAdmin />} />
-        <Route path="subject" element={<SubjectAdmin />} />
-        <Route path="student" element={<StudentAdmin/>} />
-        
-      </Routes>
+                <Routes>
+                    <Route path="score" element={<ScoreAdmin />} />
+                    <Route path="subject" element={<SubjectAdmin />} />
+                    <Route path="student" element={<StudentAdmin />} />
+
+                </Routes>
             </Box>
             {/* end left------------------------------------------ */}
 
@@ -48,7 +48,7 @@ const BodyAdmin = () => {
                     marginLeft: "15px",
                 }}
             >
-            <InformationAdmin />
+                <InformationAdmin />
             </Box>
             {/* endright----------------------- */}
         </Box>

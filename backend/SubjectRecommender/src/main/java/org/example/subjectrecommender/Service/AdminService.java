@@ -44,4 +44,8 @@ public class AdminService {
     public void updateUser(UserUpdateDTO dto) {
         userService.updateUser(dto);
     }
+
+    public void addScore(ScoreAdd dto) {
+        scoreService.addScore(dto);
+    }
 }

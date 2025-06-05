@@ -38,5 +38,5 @@ public interface ScoreRepository extends JpaRepository<Score, Long>, JpaSpecific
                               @Param("semester") Integer semester,
                               @Param("status") Integer status,
                               Pageable pageable);
-
+    Score findBySubjectIdAndUserIdAndSemesterAndYear(String subjectId, String userId, Integer semester, Integer year);
 }

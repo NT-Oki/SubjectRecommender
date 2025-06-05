@@ -8,7 +8,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 const StudentAdmin = () => {
     interface UserDTO {
         id: string;
@@ -26,8 +26,11 @@ const StudentAdmin = () => {
     const [searchUserId, setSearchUserId] = useState("");
     const [searchYear, setSearchYear] = useState<Number>();
     const [searchName, setSearchName] = useState("");
+    const [lastNameUpdate, setLastNameUpdate] = useState<string | null>(null);
+    const [nameUpdate, setNameUpdate] = useState<string | null>(null);
+    const [editUserId, setEditUserId] = useState<string | null>(null);
     const fetchUserScore = async () => {
-    
+
         // const userId = sessionStorage.getItem("userId");
 
         try {
@@ -36,9 +39,9 @@ const StudentAdmin = () => {
                 params: {
                     page: page - 1,
                     size: pageSize,
-                    userId: searchUserId||undefined,
-                       userName: searchName || undefined,
-                    year: searchYear ||undefined,
+                    userId: searchUserId || undefined,
+                    userName: searchName || undefined,
+                    year: searchYear || undefined,
                 },
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -87,37 +90,65 @@ const StudentAdmin = () => {
             alert(err.response?.data || "Lỗi khi xuất file");
         }
     }
+    const handleEdit = async (u: UserDTO) => {
+        if (editUserId != null) {
+            try {
+                const res = await axios.put(API_ENDPOINTS.ADMIN.STUDENT.USER, {
+                    id: u.id,
+                    lastName: lastNameUpdate,
+                    name: nameUpdate,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                u.lastName = lastNameUpdate ?? u.lastName;
+                u.name = nameUpdate ?? u.name;
+                console.log(res.data);
+                setEditUserId(null);
+                setLastNameUpdate(null);
+                setNameUpdate(null);
+            } catch (err: any) {
+                console.log(err.response?.data || err.message);
+            }
+        } else {
+            setEditUserId(u.id);
+            setLastNameUpdate(u.lastName);
+            setNameUpdate(u.name);
+        }
+    };
 
-        return (
-            // body--------------------------------------
-            <>
-                <Box
+
+    return (
+        // body--------------------------------------
+        <>
+            <Box
+                sx={{
+                    backgroundColor: "#3EBE30",
+                    display: "flex",
+                    alignItems: "center",
+                    paddingLeft: "30px",
+                    height: "24px",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 12,
+                }}
+            >
+                <GiTwirlyFlower />
+                <Typography
                     sx={{
-                        backgroundColor: "#3EBE30",
-                        display: "flex",
-                        alignItems: "center",
-                        paddingLeft: "30px",
-                        height: "24px",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 12,
+
+                        fontFamily: "sans-serif",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        color: "white",
+                        paddingLeft: "5px"
                     }}
                 >
-                    <GiTwirlyFlower />
-                    <Typography
-                        sx={{
-
-                            fontFamily: "sans-serif",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            color: "white",
-                            paddingLeft: "5px"
-                        }}
-                    >
-                        QUẢN LÝ ĐIỂM
-                    </Typography>
-                </Box>
-                {/* <Box
+                    QUẢN LÝ ĐIỂM
+                </Typography>
+            </Box>
+            {/* <Box
                 sx={{
                     backgroundColor: "white",
                     display: "flex",
@@ -130,153 +161,165 @@ const StudentAdmin = () => {
                 }}
             >
             </Box> */}
-                <Box display="flex" gap={2} mb={2} mt={2} justifyContent={"center"}>
-                    <TextField label="Mã SV" size="small"
-                        value={searchUserId}
-                        onChange={(e) => setSearchUserId(e.target.value)} />
-                   <TextField label="Khóa" size="small"
-                        value={searchYear}
-                        onChange={(e) => setSearchYear(Number(e.target.value))} />
-                    <TextField
-                        label="Tên"
-                        size="small"
-                        value={searchName}
-                        onChange={(e) => setSearchName(e.target.value)} />
-                    <Button variant="contained"
-                        onClick={handleSearchClick}
-                    >Tìm</Button>
-                    <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
-                </Box>
+            <Box display="flex" gap={2} mb={2} mt={2} justifyContent={"center"}>
+                <TextField label="Mã SV" size="small"
+                    value={searchUserId}
+                    onChange={(e) => setSearchUserId(e.target.value)} />
+                <TextField label="Khóa" size="small"
+                    value={searchYear}
+                    onChange={(e) => setSearchYear(Number(e.target.value))} />
+                <TextField
+                    label="Tên"
+                    size="small"
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)} />
+                <Button variant="contained"
+                    onClick={handleSearchClick}
+                >Tìm</Button>
+                <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
+            </Box>
 
-                <Box
-                    sx={{
-                        backgroundColor: "#FFA500",
+            <Box
+                sx={{
+                    backgroundColor: "#FFA500",
+                    display: "flex",
+                    alignItems: "center",
+                    paddingLeft: "30px",
+                    height: "35px",
+                    position: "sticky",
+                    top: 39,
+                    zIndex: 10
+                    ,
+
+                    "& > *:not(:last-child)": {
+                        borderRight: "1px solid white",
+
+                    },
+                    "& > *": {
+                        margin: "auto",
+                        fontFamily: "sans-serif",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        color: "white",
+                        height: "100%",
                         display: "flex",
                         alignItems: "center",
-                        paddingLeft: "30px",
-                        height: "35px",
-                        position: "sticky",
-                        top: 39,
-                        zIndex: 10
-                        ,
+                        justifyContent: "center"
 
-                        "& > *:not(:last-child)": {
-                            borderRight: "1px solid white",
+                    },
+                }}
+            >
+                <Typography flex={0.2}>STT</Typography>
+                <Typography flex={0.7}>MSSV</Typography>
+                <Typography flex={1}>Họ và tên đệm</Typography>
+                <Typography flex={0.5}>Tên</Typography>
+                <Typography flex={1}>Khoa</Typography>
+                <Typography flex={0.5}>Khóa</Typography>
+                <Typography flex={0.5}>Hành Động</Typography>
 
-                        },
-                        "& > *": {
-                            margin: "auto",
-                            fontFamily: "sans-serif",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            color: "white",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
+            </Box>
+            {/* ///////// */}
 
-                        },
-                    }}
-                >
-                    <Typography flex={0.2}>STT</Typography>
-                    <Typography flex={0.7}>MSSV</Typography>
-                    <Typography flex={1}>Họ và tên đệm</Typography>
-                    <Typography flex={0.5}>Tên</Typography>
-                    <Typography flex={1}>Khoa</Typography>
-                    <Typography flex={0.5}>Khóa</Typography>
-                    <Typography flex={0.5}>Hành Động</Typography>
+            {isLoading ?
+                (
+                    <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : data ? (data.map((user: UserDTO, index: number) => (
 
-                </Box>
-                {/* ///////// */}
-
-                {isLoading ?
-                    (
-                        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                            <CircularProgress />
-                        </Box>
-                    ) : data ? (data.map((user: UserDTO, index: number) => (
-
-                        <Fragment key={user.id}>
-                            {/* <Box
+                    <Fragment key={user.id}>
+                        <Box
+                            key={user?.id || index}
                             sx={{
-                                backgroundColor: "#FFD968",
+                                backgroundColor: "white",
                                 display: "flex",
                                 alignItems: "center",
                                 paddingLeft: "30px",
-                                height: "30px"
-                            }}
-                        >
-                            <Typography
-                                sx={{
-                                    fontWeight: "bold",
-                                }}
-                            >
-                                {key}
-                            </Typography>
+                                height: "27px",
+                                borderBottom: "1px solid #D9D9D9",
 
-
-                        </Box> */}
-
-                            <Box
-                                key={user?.id || index}
-                                sx={{
-                                    backgroundColor: "white",
+                                "& > *:not(:last-child)": {
+                                    borderRight: "1px solid #D9D9D9",
+                                    // để đường gạch bằng chiều cao của Box
+                                },
+                                "& > *": {
+                                    margin: "auto",
+                                    fontFamily: "sans-serif",
+                                    fontSize: "16px",
+                                    color: "#272424",
+                                    height: "100%",
                                     display: "flex",
                                     alignItems: "center",
-                                    paddingLeft: "30px",
-                                    height: "27px",
-                                    borderBottom: "1px solid #D9D9D9",
+                                    justifyContent: "center"
 
-                                    "& > *:not(:last-child)": {
-                                        borderRight: "1px solid #D9D9D9",
-                                        // để đường gạch bằng chiều cao của Box
-                                    },
-                                    "& > *": {
-                                        margin: "auto",
-                                        fontFamily: "sans-serif",
-                                        fontSize: "16px",
-                                        color: "#272424",
-                                        height: "100%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center"
-
-                                    },
-                                }}
+                                },
+                            }}
+                        >
+                            <Typography flex={0.2}>{(page - 1) * pageSize + index + 1}</Typography>
+                            <Typography flex={0.7}>{user.id}</Typography>
+                            {/* <Typography flex={1}>{user.lastName}</Typography> */}
+                            <Typography flex={1}>
+                                {editUserId === user.id ? (
+                                    <TextField
+                                        size="small"
+                                        type="text"
+                                        value={lastNameUpdate ?? user.lastName}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setLastNameUpdate(value);
+                                        }}
+                                        inputProps={{ min: 0, step: 0.1, maxlength: 25 }}
+                                    />
+                                ) : (user.lastName)}
+                            </Typography>
+                            {/* <Typography flex={0.5}>{user.name}</Typography> */}
+                            <Typography flex={0.5}>
+                                {editUserId === user.id ? (
+                                    <TextField
+                                        size="small"
+                                        type="text"
+                                        value={nameUpdate ?? user.name}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setNameUpdate(value);
+                                        }}
+                                        inputProps={{ min: 0, step: 0.1, maxlength: 7 }}
+                                    />
+                                ) : (user.name)}
+                            </Typography>
+                            <Typography flex={1}>{user.major}</Typography>
+                            <Typography flex={0.5}>{user.enrollmentYear}</Typography>
+                            <Box
+                                flex={0.5}
                             >
-                                <Typography flex={0.2}>{(page - 1) * pageSize + index + 1}</Typography>
-                                <Typography flex={0.7}>{user.id}</Typography>
-                                <Typography flex={1}>{user.lastName}</Typography>
-                                <Typography flex={0.5}>{user.name}</Typography>
-                                <Typography flex={1}>{user.major}</Typography>
-                                <Typography flex={0.5}>{user.enrollmentYear}</Typography>
-                                <Box
-                                    flex={0.5}
+                                <Button
+                                    onClick={() => handleEdit(user)}
+                                    size="small"
+                                    variant="outlined"
+                                    color={editUserId === user.id ? "success" : "primary"}
                                 >
-                                    <Button
-                                    >
-                                        <FontAwesomeIcon icon={faPenToSquare} color={"orange"} />
-                                    </Button>
+                                    <FontAwesomeIcon icon={editUserId === user.id ? faCheck : faPenToSquare} />
+                                </Button>
 
-                                </Box>
                             </Box>
-                        </Fragment>)
-                    )) : null
-                }
-                <Box display="flex" justifyContent="center" mt={2}>
-                    <Pagination
-                        count={Math.ceil(total / pageSize)}
-                        page={page} color="primary"
-                        onChange={(_, value) => setPage(value)}
-                    />
-                </Box>
+                        </Box>
+                    </Fragment>)
+                )) : null
+            }
+            <Box display="flex" justifyContent="center" mt={2}>
+                <Pagination
+                    count={Math.ceil(total / pageSize)}
+                    page={page} color="primary"
+                    onChange={(_, value) => setPage(value)}
+                />
+            </Box>
 
-                <Typography mt={1} variant="body2" align="right">
-                    Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
-                </Typography>
-            </>
+            <Typography mt={1} variant="body2" align="right">
+                Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
+            </Typography>
+        </>
 
-            //    end Body---------------------------------
-        )
-    }
-    export default StudentAdmin;
+        //    end Body---------------------------------
+    )
+}
+export default StudentAdmin;

@@ -123,13 +123,14 @@ public class UserService {
         User user=userRepository.getReferenceById(dto.getId());
         if(dto.getLastName()!=null){
             user.setLastName(dto.getLastName());
-        }if(dto.getName()!=null){
+        }if(dto.getName()!=null) {
             user.setName(dto.getName());
-        }if(dto.getMajor()!=null){
-            user.setMajor(dto.getMajor());
-        }if(dto.getEnrollmentYear()!=null){
-            user.setEnrollmentYear(dto.getEnrollmentYear());
         }
+//        }if(dto.getMajor()!=null){
+//            user.setMajor(dto.getMajor());
+//        }if(dto.getEnrollmentYear()!=null){
+//            user.setEnrollmentYear(dto.getEnrollmentYear());
+//        }
         userRepository.save(user);
     }
 }

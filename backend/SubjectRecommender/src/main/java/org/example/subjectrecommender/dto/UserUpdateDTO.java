@@ -7,8 +7,8 @@ public class UserUpdateDTO {
     private String id;
     private String lastName;
     private String name;
-    private String major;
-    private Integer enrollmentYear ;
+//    private String major;
+//    private Integer enrollmentYear ;
 
 
 }
