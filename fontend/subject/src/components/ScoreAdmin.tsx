@@ -170,8 +170,10 @@ const ScoreAdmin = () => {
         }
     };
 
-const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent) => {
-  const { name, value } = event.target;
+const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<any>) => {
+    const name = event.target.name;
+  const valueStr = event.target.value; // string
+  const value = Number(valueStr); // chuyển sang số nếu cần
   setDataAdd(prev => ({
     ...prev,
     [name]: name === "semester" || name === "year" || name === "score" ? Number(value) : value
@@ -194,6 +196,7 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaEl
       year: 0,
     });
     fetchUserScore(); // Cập nhật lại danh sách
+    console.log(res.data);
   } catch (err: any) {
     alert(err.response?.data || "Lỗi khi thêm điểm");
   }
