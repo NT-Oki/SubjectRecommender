@@ -3,9 +3,7 @@ package org.example.subjectrecommender.Controller;
 import org.example.subjectrecommender.Model.Score;
 import org.example.subjectrecommender.Service.AdminService;
 import org.example.subjectrecommender.Service.MainService;
-import org.example.subjectrecommender.dto.ScoreAdminDto;
-import org.example.subjectrecommender.dto.ScoreResponseDTO;
-import org.example.subjectrecommender.dto.UserDTO;
+import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -15,10 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -107,6 +102,24 @@ public class AdminController {
                 .headers(headers)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(in));
+    }
+    @PutMapping("/score")
+    public ResponseEntity<?> updateScore(@RequestBody ScoreUpdateDTO dto){
+        try{adminService.updateScore(dto);
+            return ResponseEntity.ok("Cập nhật điểm thành công");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage()+"Cập nhật điểm thất bại");
+        }
+
+    }
+    @PutMapping("/student")
+    public ResponseEntity<?> updateStudent(@RequestBody UserUpdateDTO dto){
+        try{adminService.updateUser(dto);
+            return ResponseEntity.ok("Cập nhật điểm thành công");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage()+"Cập nhật điểm thất bại");
+        }
+
     }
 
 

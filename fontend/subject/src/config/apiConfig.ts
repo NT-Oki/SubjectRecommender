@@ -19,10 +19,12 @@ const API_ENDPOINTS = {
     SCORE: {
       LISTSCORE:`${ADMIN_URL}/scores`,
       EXPORT:`${ADMIN_URL}/scores/export`,
+      SCORE:`${ADMIN_URL}/score`,
     },
     STUDENT: {
       LISTUSER:`${ADMIN_URL}/students`,
       EXPORT:`${ADMIN_URL}/students/export`,
+      USER:`${ADMIN_URL}/student`,
     }
   }
 };

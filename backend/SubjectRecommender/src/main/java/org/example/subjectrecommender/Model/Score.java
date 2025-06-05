@@ -2,7 +2,6 @@ package org.example.subjectrecommender.Model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Data

@@ -18,6 +18,7 @@ import org.example.subjectrecommender.Repository.PrerequisiteRepository;
 import org.example.subjectrecommender.Repository.ScoreRepository;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
+import org.example.subjectrecommender.dto.ScoreUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -153,7 +154,17 @@ public Page<ScoreAdminDto> getAllScorePageWithFilterUsingQuery(
         }
 
 
+        public void updateScore(ScoreUpdateDTO dto) {
+            Score score = scoreRepository.getReferenceById(dto.getId());
+            if(dto.getScore()!=null){
+            score.setScore(dto.getScore());
+            if(dto.getScore()>=5){
+                score.setPassed(1);
+            }else{
+                score.setPassed(0);
+            }
+            }
+            scoreRepository.save(score);
 
-
-
+        }
     }

@@ -8,7 +8,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 const ScoreAdmin = () => {
     interface UserDTO {
         id: string;
@@ -51,6 +51,9 @@ const ScoreAdmin = () => {
     const [searchSubjectName, setSearchSubjectName] = useState("");
     const [searchStatus, setSearchStatus] = useState("");
     const token = sessionStorage.getItem("token");
+    const [scoreUpdate, setScoreUpdate] = useState<Number>();
+    const [isEdit, setIsEdit] = useState<boolean>(false);
+    const [editScoreId, setEditScoreId] = useState<number | null>(null);
     const fetchUserScore = async () => {
 
         // const userId = sessionStorage.getItem("userId");
@@ -72,7 +75,7 @@ const ScoreAdmin = () => {
             });
             console.log(response.data)
             setData(response.data.scores);
-            setTotal(response.data.total)
+            setTotal(response.data.total);
         } catch (error) {
             console.error("Lỗi khi lấy thông tin điểm user:", error);
         } finally {
@@ -115,6 +118,50 @@ const ScoreAdmin = () => {
         alert(err.response?.data || "Lỗi khi xuất file");
     }
 };
+const handleEdit = async (scoreId: number) => {
+  if (isEdit) {
+    try {
+      const scoreToUpdate = data?.find((s) => s.id === scoreId);
+      if (!scoreToUpdate) return;
+
+      const updatedScore = {
+        ...scoreToUpdate,
+        score: scoreUpdate ?? scoreToUpdate.score,
+      };
+
+      const res = await axios.put(API_ENDPOINTS.ADMIN.SCORE.SCORE, updatedScore, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // ✅ Cập nhật lại điểm ngay trong danh sách
+      setData(prevData =>
+        prevData?.map((s) =>
+          s.id === scoreId
+            ? {
+                ...s,
+                score:Number( updatedScore.score),
+                passed:+updatedScore.score>=5?1:0,
+              }
+            : s
+        ) || []
+      );
+
+      console.log(res.data);
+      setIsEdit(false);
+      setEditScoreId(null);
+    } catch (err: any) {
+      console.log(err.response?.data || err.message);
+    }
+  } else {
+    setIsEdit(true);
+    setEditScoreId(scoreId);
+    setScoreUpdate(data?.find((s) => s.id === scoreId)?.score); // preload điểm cũ vào state nếu cần
+  }
+};
+
+
 
     return (
         // body--------------------------------------
@@ -323,15 +370,30 @@ const ScoreAdmin = () => {
                             </Tooltip>
                             <Typography flex={0.4}>{score.semester}</Typography>
                             <Typography flex={0.7}>{score.year} - {score.year + 1}</Typography>
-                            <Typography flex={0.6}>{score.score}</Typography>
+                          <Typography flex={0.6}>
+    {editScoreId === score.id ? (
+        <TextField
+            size="small"
+            type="number"
+            value={scoreUpdate ?? score.score}
+            onChange={(e) => setScoreUpdate(Number(e.target.value))}
+                inputProps={{ min: 0, max: 10, step: 0.1 }}
+        />
+    ) : (score.score)}
+</Typography>
+
                             <Typography flex={0.6}>{score.passed == 1 ? "Đạt" : "Không Đạt"}</Typography>
                             <Box
                                 flex={0.5}
                             >
-                                <Button
-                                >
-                                    <FontAwesomeIcon icon={faPenToSquare} color={"orange"} />
-                                </Button>
+                                 <Button
+    onClick={() => handleEdit(score.id)}
+    size="small"
+    variant="outlined"
+    color={editScoreId === score.id ? "success" : "primary"}
+  >
+    <FontAwesomeIcon icon={editScoreId === score.id ? faCheck : faPenToSquare} />
+  </Button>
 
                             </Box>
                         </Box>
