@@ -1,8 +1,6 @@
 package org.example.subjectrecommender.Service;
 
-import org.example.subjectrecommender.dto.ScoreAdminDto;
-import org.example.subjectrecommender.dto.ScoreResponseDTO;
-import org.example.subjectrecommender.dto.UserDTO;
+import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,4 +37,15 @@ public class AdminService {
         return userService.exportUserToExcel(users);
     }
 
+    public void updateScore(ScoreUpdateDTO dto) {
+         scoreService.updateScore(dto);
+    }
+
+    public void updateUser(UserUpdateDTO dto) {
+        userService.updateUser(dto);
+    }
+
+    public void addScore(ScoreAdd dto) {
+        scoreService.addScore(dto);
+    }
 }

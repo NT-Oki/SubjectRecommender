@@ -9,6 +9,7 @@ import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.UserRepository;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
 import org.example.subjectrecommender.dto.UserDTO;
+import org.example.subjectrecommender.dto.UserUpdateDTO;
 import org.example.subjectrecommender.util.ConvertToUnicode;
 import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,5 +117,20 @@ public class UserService {
             workbook.write(out);
             return new ByteArrayInputStream(out.toByteArray());
         }
+    }
+
+    public void updateUser(UserUpdateDTO dto) {
+        User user=userRepository.getReferenceById(dto.getId());
+        if(dto.getLastName()!=null){
+            user.setLastName(dto.getLastName());
+        }if(dto.getName()!=null) {
+            user.setName(dto.getName());
+        }
+//        }if(dto.getMajor()!=null){
+//            user.setMajor(dto.getMajor());
+//        }if(dto.getEnrollmentYear()!=null){
+//            user.setEnrollmentYear(dto.getEnrollmentYear());
+//        }
+        userRepository.save(user);
     }
 }

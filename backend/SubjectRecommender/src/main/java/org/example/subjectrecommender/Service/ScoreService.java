@@ -16,8 +16,12 @@ import org.example.subjectrecommender.Model.Subject;
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.PrerequisiteRepository;
 import org.example.subjectrecommender.Repository.ScoreRepository;
+import org.example.subjectrecommender.Repository.SubjectRepository;
+import org.example.subjectrecommender.Repository.UserRepository;
+import org.example.subjectrecommender.dto.ScoreAdd;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
+import org.example.subjectrecommender.dto.ScoreUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,6 +42,10 @@ import java.util.stream.Collectors;
         ScoreRepository scoreRepository;
         @Autowired
         PrerequisiteService prerequisiteService;
+        @Autowired
+        UserRepository userRepository;
+        @Autowired
+        SubjectRepository subjectRepository;
         public void save (Score score) {
             scoreRepository.save(score);
         }
@@ -153,7 +161,47 @@ public Page<ScoreAdminDto> getAllScorePageWithFilterUsingQuery(
         }
 
 
+        public void updateScore(ScoreUpdateDTO dto) {
+            Score score = scoreRepository.getReferenceById(dto.getId());
+            if(dto.getScore()!=null){
+            score.setScore(dto.getScore());
+            if(dto.getScore()>=5){
+                score.setPassed(1);
+            }else{
+                score.setPassed(0);
+            }
+            }
+            scoreRepository.save(score);
 
+        }
 
-
+        public void addScore(ScoreAdd dto) {
+            Score find = scoreRepository.findBySubjectIdAndUserIdAndSemesterAndYear(dto.getSubjectId(), dto.getUserId(), dto.getSemester(), dto.getYear());
+            if (find != null) {
+                System.out.println("Đã tồn tại score, thực hiện cập nhập score id" + find.getId() +"với :"+dto.getScore() );
+                find.setScore(dto.getScore());
+                if (dto.getScore() >= 5) {
+                    find.setPassed(1);
+                } else {
+                    find.setPassed(0);
+                }
+                scoreRepository.save(find);
+            } else {
+                Score score = new Score();
+                User user = userRepository.getReferenceById(dto.getUserId());
+                Subject subject = subjectRepository.getReferenceById(dto.getSubjectId());
+                score.setUser(user);
+                score.setSubject(subject);
+                score.setSemester(dto.getSemester());
+                score.setYear(dto.getYear());
+                score.setScore(dto.getScore());
+                if (dto.getScore() >= 5) {
+                    score.setPassed(1);
+                } else {
+                    score.setPassed(0);
+                }
+                scoreRepository.save(score);
+                System.out.println(" thêm score mới thành công");
+            }
+        }
     }
