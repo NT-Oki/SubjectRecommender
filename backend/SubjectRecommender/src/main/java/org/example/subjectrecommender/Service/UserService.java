@@ -6,8 +6,10 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.subjectrecommender.Model.User;
+import org.example.subjectrecommender.Repository.CurriculumVersionRepository;
 import org.example.subjectrecommender.Repository.UserRepository;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
+import org.example.subjectrecommender.dto.UserAddDTO;
 import org.example.subjectrecommender.dto.UserDTO;
 import org.example.subjectrecommender.dto.UserUpdateDTO;
 import org.example.subjectrecommender.util.ConvertToUnicode;
@@ -28,6 +30,10 @@ import java.util.List;
 public class UserService {
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    CurriculumVersionRepository curriculumVersionRepository;
+    @Autowired
+    PasswordUtil passwordUtil;
 
     public void save(User user) {
         userRepository.save(user);
@@ -135,5 +141,19 @@ public class UserService {
     }
     public boolean checkIdExists(String id) {
         return userRepository.existsById(id);
+    }
+
+    public void addUser(UserAddDTO dto) {
+        User user=new User();
+        String pass=PasswordUtil.hashPassword(ConvertToUnicode.removeAccentAndToLower(dto.getName())+dto.getUserId());
+        user.setName(dto.getName());
+        user.setLastName(dto.getLastName());
+        user.setCurriculumVersion(curriculumVersionRepository.getReferenceById(dto.getCurriculumId()));
+        user.setEnrollmentYear(dto.getEnrollmentYear());
+        user.setId(dto.getUserId());
+        user.setMajor("Công nghệ thông tin");
+        user.setPassword(pass);
+        user.setRole(2);
+        userRepository.save(user);
     }
 }

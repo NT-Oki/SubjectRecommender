@@ -25,6 +25,7 @@ const API_ENDPOINTS = {
       LISTUSER:`${ADMIN_URL}/users`,
       EXPORT:`${ADMIN_URL}/users/export`,
       USER:`${ADMIN_URL}/user`,
+      CHECKEXIST: `${ADMIN_URL}/users/exist`,
     }
   }
 };

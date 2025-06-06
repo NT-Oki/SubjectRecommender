@@ -132,12 +132,12 @@ public class AdminController {
 
     //Thêm 1 user
     @PostMapping("/user")
-    public ResponseEntity<?> addUser(@RequestBody ScoreAddDTO dto){
+    public ResponseEntity<?> addUser(@RequestBody UserAddDTO dto){
         try{
-            adminService.addScore(dto);
-            return ResponseEntity.ok("Thêm 1 score thành công ");
+            adminService.addUser(dto);
+            return ResponseEntity.ok("Thêm 1 user thành công ");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 score thất bại");
+            return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 user thất bại");
         }
     }
     //check mssv để tránh trùng

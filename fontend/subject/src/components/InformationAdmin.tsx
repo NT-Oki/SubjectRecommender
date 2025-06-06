@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 const menuItems = [
     { id: "score", label: "Quản lý điểm" },
     { id: "student", label: "Quản lý sinh viên" },
-    { id: "subject", label: "Quản lý môn học" },
+    { id: "subject", label: "Quản lý chương trình đào tạo" },
 ];
 
 const InformationAdmin = () => {

@@ -31,21 +31,21 @@ const StudentAdmin = () => {
     const [lastNameUpdate, setLastNameUpdate] = useState<string | null>(null);
     const [nameUpdate, setNameUpdate] = useState<string | null>(null);
     const [editUserId, setEditUserId] = useState<string | null>(null);
-    const [isAdd, setIsAdd] = useState<boolean>(true);
+    const [isAdd, setIsAdd] = useState<boolean>(false);
     const [mssvAdd, setMssvAdd] = useState<string | null>(null);
     const [lastNameAdd, setLastNameAdd] = useState<string | null>(null);
     const [nameAdd, setNameAdd] = useState<string | null>(null);
-    const [enrollmentYearAdd, setEnrollmentYearAdd] = useState<number | null>(null);
-    const [curriculumAdd, setCurriculumAdd] = useState<string | null>(null);
+    const [enrollmentYearAdd, setEnrollmentYearAdd] = useState<number | null>(2020);
+    const [curriculumAdd, setCurriculumAdd] = useState<string | null>("7480201_2020");
     const [mssvAddErro, setMssvAddErro] = useState<string | null>(null);
     const [lastNameAddErro, setLastNameAddErro] = useState<string | null>(null);
     const [nameAddErro, setNameAddErro] = useState<string | null>(null);
-    const years = Array.from({ length: 2 }, (_, i) => 2020 + i); 
-const [isenrollmentYearAddErro, setIsenrollmentYearAddErro] = useState<boolean>(true);
-const [isMssvAddErro, setIsMssvAddErro] = useState<boolean>(false);
-const [isLastNameAddErro, setIsLastNameAddErro] = useState<boolean>(false);
-const [isNameAddErro, setIsNameAddErro] = useState<boolean>(false);
-const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
+    const years = Array.from({ length: 2 }, (_, i) => 2020 + i);
+    const [isenrollmentYearAddErro, setIsenrollmentYearAddErro] = useState<boolean>(false);
+    const [isMssvAddErro, setIsMssvAddErro] = useState<boolean>(true);
+    const [isLastNameAddErro, setIsLastNameAddErro] = useState<boolean>(true);
+    const [isNameAddErro, setIsNameAddErro] = useState<boolean>(true);
+    const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(false);
     // const [dataAdd, setDataAdd] = useState<ScoreAdd>({
     //   userId: '',
     //   subjectId: '',
@@ -53,7 +53,7 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
     //   score: 0,
     //   year: 0,
     // });
-    const fetchUser= async () => {
+    const fetchUser = async () => {
 
         // const userId = sessionStorage.getItem("userId");
 
@@ -143,25 +143,51 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
     };
 
 
-    const handleAdd = async()=>{
-        try{
-            const res = await axios.post(API_ENDPOINTS.ADMIN.STUDENT.USER,{
+    const handleAdd = async () => {
+        if(!isMssvAddErro&&!isLastNameAddErro&&!isNameAddErro&&!isCurriculumAddErro&&!isenrollmentYearAddErro){
+        try {
+            const res = await axios.post(API_ENDPOINTS.ADMIN.STUDENT.USER, {
                 userId: mssvAdd,
-                lastName:lastNameAdd,
-                name:nameAdd,
-                enrollmentYear:enrollmentYearAdd,
-                curriculumId:curriculumAdd
+                lastName: lastNameAdd?.toLocaleUpperCase(),
+                name: nameAdd?.toLocaleUpperCase(),
+                enrollmentYear: enrollmentYearAdd,
+                curriculumId: curriculumAdd
             }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log(res.data);
-                setIsAdd(false);
-                fetchUser();
-        }catch(err:any){
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(res.data);
+            setIsAdd(false);
+            fetchUser();
+        } catch (err: any) {
             console.log(err.response.data);
+
+        }}else{
+            console.log("dữ liệu chưa cho phép thêm sinh viên");
             
+        }
+    }
+    const checkMssvAdd = async (e:any) => {
+        try {
+            const res = await axios.get(API_ENDPOINTS.ADMIN.STUDENT.CHECKEXIST, {
+                params: {
+                    userId: e.target.value
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            if (res.data == true) {
+                setMssvAddErro("Mã số sinh viên đã tồn tại")
+                setIsMssvAddErro(true);
+            }else{
+                setIsMssvAddErro(false);
+            }
+
+        } catch (err: any) {
+            console.log(err.response.data);
+
         }
     }
 
@@ -454,16 +480,35 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                             name="mssvAdd"
                                             fullWidth margin="dense"
                                             value={mssvAdd}
-                                            onChange={checkMssvAdd}
-                                            slotProps={
-                                                {
-                                                    htmlInput: {
-                                                        maxLength: 8,
-                                                        minLength: 8,
+                                            onChange={(e) => {
+                                                const value = mssvAdd;
+                                                const input = e.target.value;
 
+                                                // Chỉ cho phép ký tự số (0-9)
+                                                if (/^\d*$/.test(input)) {
+                                                    // Giới hạn độ dài tối đa là 8
+                                                    if (input.length < 8) {
+                                                        setMssvAdd(input);
+                                                        setMssvAddErro(null); // Xóa lỗi nếu có
+
+                                                       
+                                                    } else if (input.length === 8) {
+                                                        setMssvAdd(input);
+                                                        checkMssvAdd(e); // Gọi kiểm tra khi đủ 8 ký tự
+                                                        }
+                                                    else {
+                                                        // Nếu nhập quá 8 số
+                                                        setMssvAdd(input.slice(0, 8));
+                                                        setMssvAddErro("Giá trị bắt buộc 8 kí tự số");
                                                     }
+                                                } else {
+                                                    // Nếu nhập ký tự không phải số
+                                                    setMssvAdd(mssvAdd);
+                                                    setMssvAddErro("Chỉ được nhập chữ số (0-9)");
                                                 }
-                                            }
+                                            }}
+
+
                                         />
                                         <FormHelperText>{mssvAddErro}</FormHelperText>
                                     </FormControl>
@@ -499,7 +544,7 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                                     setIsLastNameAddErro(true);
                                                 } else if (input.length == 25) {
                                                     setLastNameAddErro(null);
-                                                     setIsLastNameAddErro(false);
+                                                    setIsLastNameAddErro(false);
                                                 }
                                             }}
                                             onChange={(e) => {
@@ -508,7 +553,7 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                                 if (input.length > 25) {
                                                     setLastNameAddErro("Tên hợp lệ phải ngắn hơn 26 ký tự");
                                                     setLastNameAdd(input.substring(0, 25));
-                                                     setIsLastNameAddErro(false);
+                                                    setIsLastNameAddErro(false);
                                                 } else if (input.length < 2) {
                                                     setLastNameAddErro("Tên hợp lệ phải chứa ít nhất 2 kí tự");
                                                     setLastNameAdd(input);
@@ -576,7 +621,7 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                                     setNameAdd(value);
                                                     setIsNameAddErro(false);
 
-                                                }  else {
+                                                } else {
                                                     setIsNameAddErro(false);
                                                     setNameAddErro(null);
                                                     setNameAdd(input);
@@ -598,13 +643,13 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                 >
                                     <FormControl
                                         sx={{ width: "350px", marginTop: 2 }}
-                                         error={isenrollmentYearAddErro} 
+                                        error={isenrollmentYearAddErro}
                                     >
                                         <InputLabel id="year-select-label">Năm nhập học</InputLabel>
                                         <Select
                                             labelId="year-select-label"
                                             value={enrollmentYearAdd}
-                                            onChange={(e)=>{
+                                            onChange={(e) => {
                                                 setEnrollmentYearAdd(Number(e.target.value))
                                                 setIsenrollmentYearAddErro(false);
 
@@ -621,7 +666,7 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                     </FormControl>
                                 </Box>
                                 {/* Chương trình đào tạo */}
-                                 <Box
+                                <Box
                                     sx={{
                                         display: "flex",
                                         margin: "10px",
@@ -632,21 +677,21 @@ const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
                                 >
                                     <FormControl
                                         sx={{ width: "350px", marginTop: 2 }}
-                                         error={isCurriculumAddErro} 
+                                        error={isCurriculumAddErro}
                                     >
                                         <InputLabel id="year-select-label">Chương trình đào tạo</InputLabel>
                                         <Select
                                             labelId="year-select-label"
                                             value={curriculumAdd}
-                                            onChange={(e)=>{
+                                            onChange={(e) => {
                                                 setCurriculumAdd(e.target.value)
                                                 setIsCurriculumAddErro(false);
                                             }}
                                             label="Chương trình đào tạo"
                                         >
-                                                <MenuItem value={"7480201_2020"}>
-                                                    7480201_2020 (từ năm 2020)
-                                                </MenuItem>
+                                            <MenuItem value={"7480201_2020"}>
+                                                7480201_2020 (từ năm 2020)
+                                            </MenuItem>
                                         </Select>
                                         {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
                                     </FormControl>
