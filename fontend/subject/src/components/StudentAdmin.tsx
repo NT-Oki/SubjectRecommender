@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, TextField, Pagination } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, Input, FormHelperText, InputLabel, Select, MenuItem } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -8,7 +8,9 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faClock, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import Draggable from 'react-draggable';
+import Header from "./Header"
 const StudentAdmin = () => {
     interface UserDTO {
         id: string;
@@ -29,7 +31,29 @@ const StudentAdmin = () => {
     const [lastNameUpdate, setLastNameUpdate] = useState<string | null>(null);
     const [nameUpdate, setNameUpdate] = useState<string | null>(null);
     const [editUserId, setEditUserId] = useState<string | null>(null);
-    const fetchUserScore = async () => {
+    const [isAdd, setIsAdd] = useState<boolean>(true);
+    const [mssvAdd, setMssvAdd] = useState<string | null>(null);
+    const [lastNameAdd, setLastNameAdd] = useState<string | null>(null);
+    const [nameAdd, setNameAdd] = useState<string | null>(null);
+    const [enrollmentYearAdd, setEnrollmentYearAdd] = useState<number | null>(null);
+    const [curriculumAdd, setCurriculumAdd] = useState<string | null>(null);
+    const [mssvAddErro, setMssvAddErro] = useState<string | null>(null);
+    const [lastNameAddErro, setLastNameAddErro] = useState<string | null>(null);
+    const [nameAddErro, setNameAddErro] = useState<string | null>(null);
+    const years = Array.from({ length: 2 }, (_, i) => 2020 + i); 
+const [isenrollmentYearAddErro, setIsenrollmentYearAddErro] = useState<boolean>(true);
+const [isMssvAddErro, setIsMssvAddErro] = useState<boolean>(false);
+const [isLastNameAddErro, setIsLastNameAddErro] = useState<boolean>(false);
+const [isNameAddErro, setIsNameAddErro] = useState<boolean>(false);
+const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(true);
+    // const [dataAdd, setDataAdd] = useState<ScoreAdd>({
+    //   userId: '',
+    //   subjectId: '',
+    //   semester: 0,
+    //   score: 0,
+    //   year: 0,
+    // });
+    const fetchUser= async () => {
 
         // const userId = sessionStorage.getItem("userId");
 
@@ -57,11 +81,11 @@ const StudentAdmin = () => {
         }
     };
     useEffect(() => {
-        fetchUserScore();
+        fetchUser();
     }, [page, pageSize]);
     const handleSearchClick = () => {
         setPage(1); // Quay về trang 1 khi tìm kiếm mới
-        fetchUserScore();
+        fetchUser();
     };
     const handleExport = async () => {
         try {
@@ -118,6 +142,28 @@ const StudentAdmin = () => {
         }
     };
 
+
+    const handleAdd = async()=>{
+        try{
+            const res = await axios.post(API_ENDPOINTS.ADMIN.STUDENT.USER,{
+                userId: mssvAdd,
+                lastName:lastNameAdd,
+                name:nameAdd,
+                enrollmentYear:enrollmentYearAdd,
+                curriculumId:curriculumAdd
+            }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                console.log(res.data);
+                setIsAdd(false);
+                fetchUser();
+        }catch(err:any){
+            console.log(err.response.data);
+            
+        }
+    }
 
     return (
         // body--------------------------------------
@@ -177,6 +223,7 @@ const StudentAdmin = () => {
                     onClick={handleSearchClick}
                 >Tìm</Button>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
+                <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => setIsAdd(true)}>Thêm</Button>
             </Box>
 
             <Box
@@ -283,6 +330,7 @@ const StudentAdmin = () => {
                                             const value = e.target.value;
                                             setNameUpdate(value);
                                         }}
+
                                         inputProps={{ min: 0, step: 0.1, maxlength: 7 }}
                                     />
                                 ) : (user.name)}
@@ -317,6 +365,316 @@ const StudentAdmin = () => {
             <Typography mt={1} variant="body2" align="right">
                 Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
             </Typography>
+            {
+                isAdd && (
+                    <>
+                        {/* Lớp nền mờ phía sau */}
+                        <Box
+                            sx={{
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                width: '100vw',
+                                height: '100vh',
+                                bgcolor: 'rgba(0, 0, 0, 0.5)',
+                                zIndex: 999,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            {/* Popup chính */}
+                            <Box
+                                sx={{
+                                    position: 'relative',
+                                    width: "350px",
+                                    bgcolor: '#e1f7d5',
+                                    border: '1px solid rgb(59, 216, 93)',
+                                    borderRadius: 2,
+                                    boxShadow: 3,
+                                    zIndex: 1000,
+                                    p: 3,
+                                }}
+                            >
+                                {/* Nút đóng góc phải */}
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        // width:"20px"
+                                    }}
+                                >
+                                    <Button
+                                        onClick={() => setIsAdd(false)}
+                                        variant="outlined"
+                                        color="warning"
+                                        size="small"
+
+                                    >
+                                        <FontAwesomeIcon icon={faXmark} size="2x" />
+                                    </Button>
+                                </Box>
+
+                                {/* Header */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 2,
+                                        mb: 2,
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faUserPlus} color="orange" style={{ fontSize: '30px', verticalAlign: 'middle' }} />
+                                    <Typography sx={{ fontSize: "25px", fontFamily: "sans-serif", fontWeight: "bold", alignContent: "center" }}>
+
+                                        Thêm sinh viên
+                                    </Typography>
+                                </Box>
+
+                                {/* Form nhập mssv */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+
+                                    }}
+                                >
+                                    <FormControl
+                                        error={isMssvAddErro}
+                                        sx={{
+                                            width: "350px",
+                                        }}
+                                    >
+                                        <TextField
+                                            label="MSSV"
+                                            name="mssvAdd"
+                                            fullWidth margin="dense"
+                                            value={mssvAdd}
+                                            onChange={checkMssvAdd}
+                                            slotProps={
+                                                {
+                                                    htmlInput: {
+                                                        maxLength: 8,
+                                                        minLength: 8,
+
+                                                    }
+                                                }
+                                            }
+                                        />
+                                        <FormHelperText>{mssvAddErro}</FormHelperText>
+                                    </FormControl>
+                                </Box>
+                                {/* Form nhập lastName */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+
+                                    }}
+                                >
+                                    <FormControl
+                                        error={isLastNameAddErro}
+                                        sx={{
+                                            width: "350px",
+                                        }}
+                                    >
+                                        <TextField
+                                            label="Họ và tên đệm"
+                                            name="lastNameAddd"
+                                            fullWidth
+                                            margin="dense"
+                                            value={lastNameAdd}
+
+                                            onBlur={(e) => {
+                                                const input = e.target.value;
+                                                if (input.length < 2) {
+                                                    setLastNameAddErro("Tên hợp lệ phải chứa ít nhất 2 kí tự");
+                                                    setLastNameAdd(input);
+                                                    setIsLastNameAddErro(true);
+                                                } else if (input.length == 25) {
+                                                    setLastNameAddErro(null);
+                                                     setIsLastNameAddErro(false);
+                                                }
+                                            }}
+                                            onChange={(e) => {
+                                                const input = e.target.value;
+
+                                                if (input.length > 25) {
+                                                    setLastNameAddErro("Tên hợp lệ phải ngắn hơn 26 ký tự");
+                                                    setLastNameAdd(input.substring(0, 25));
+                                                     setIsLastNameAddErro(false);
+                                                } else if (input.length < 2) {
+                                                    setLastNameAddErro("Tên hợp lệ phải chứa ít nhất 2 kí tự");
+                                                    setLastNameAdd(input);
+                                                    setIsLastNameAddErro(true);
+                                                } else {
+                                                    setLastNameAddErro(null);
+                                                    setLastNameAdd(input);
+                                                    setIsLastNameAddErro(false);
+                                                }
+                                            }}
+                                        />
+                                        <FormHelperText>{lastNameAddErro}</FormHelperText>
+                                    </FormControl>
+                                </Box>
+                                {/* Form nhập name */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+
+                                    }}
+                                >
+                                    <FormControl
+                                        error={isNameAddErro}
+                                        sx={{
+                                            width: "350px",
+                                        }}
+                                    >
+                                        <TextField
+                                            label="Tên"
+                                            name="nameAdd"
+                                            fullWidth
+                                            margin="dense"
+                                            value={nameAdd}
+                                            onBlur={(e) => {
+                                                const value = nameAdd;
+                                                const input = e.target.value;
+                                                if (input.length < 1) {
+                                                    setNameAddErro("Tên hợp lệ phải chứa ít nhất 1 kí tự");
+                                                    setNameAdd(value);
+                                                    setIsNameAddErro(true);
+                                                } else if (input.length == 7) {
+                                                    setNameAddErro(null);
+                                                    setIsNameAddErro(false);
+                                                }
+                                            }}
+                                            onChange={(e) => {
+                                                const value = nameAdd;
+                                                const input = e.target.value;
+
+                                                if (input.length > 7) {
+                                                    setNameAddErro("Tên hợp lệ phải ngắn hơn 8 ký tự");
+                                                    setNameAdd(input.substring(0, 7));
+                                                    setIsNameAddErro(false);
+                                                } else if (input.length < 1) {
+                                                    setNameAddErro("Tên hợp lệ phải chứa ít nhất 1 kí tự");
+                                                    setNameAdd(input);
+                                                    setIsNameAddErro(true);
+
+                                                }
+                                                else if (input.includes(" ")) {
+                                                    setNameAddErro("Tên hợp lệ không được chứa khoảng trống");
+                                                    setNameAdd(value);
+                                                    setIsNameAddErro(false);
+
+                                                }  else {
+                                                    setIsNameAddErro(false);
+                                                    setNameAddErro(null);
+                                                    setNameAdd(input);
+                                                }
+                                            }}
+                                        />
+                                        <FormHelperText>{nameAddErro}</FormHelperText>
+                                    </FormControl>
+                                </Box>
+                                {/* năm nhập học */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+
+                                    }}
+                                >
+                                    <FormControl
+                                        sx={{ width: "350px", marginTop: 2 }}
+                                         error={isenrollmentYearAddErro} 
+                                    >
+                                        <InputLabel id="year-select-label">Năm nhập học</InputLabel>
+                                        <Select
+                                            labelId="year-select-label"
+                                            value={enrollmentYearAdd}
+                                            onChange={(e)=>{
+                                                setEnrollmentYearAdd(Number(e.target.value))
+                                                setIsenrollmentYearAddErro(false);
+
+                                            }}
+                                            label="Năm nhập học"
+                                        >
+                                            {years.map((y) => (
+                                                <MenuItem key={y} value={y}>
+                                                    {y}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
+                                    </FormControl>
+                                </Box>
+                                {/* Chương trình đào tạo */}
+                                 <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+
+                                    }}
+                                >
+                                    <FormControl
+                                        sx={{ width: "350px", marginTop: 2 }}
+                                         error={isCurriculumAddErro} 
+                                    >
+                                        <InputLabel id="year-select-label">Chương trình đào tạo</InputLabel>
+                                        <Select
+                                            labelId="year-select-label"
+                                            value={curriculumAdd}
+                                            onChange={(e)=>{
+                                                setCurriculumAdd(e.target.value)
+                                                setIsCurriculumAddErro(false);
+                                            }}
+                                            label="Chương trình đào tạo"
+                                        >
+                                                <MenuItem value={"7480201_2020"}>
+                                                    7480201_2020 (từ năm 2020)
+                                                </MenuItem>
+                                        </Select>
+                                        {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
+                                    </FormControl>
+                                </Box>
+                                {/* Button hành động */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        mt: 3,
+                                    }}
+                                >
+                                    <Button
+                                        onClick={handleAdd} // hoặc hàm xử lý đổi mật khẩu
+                                        variant="contained"
+                                        color="success"
+                                        sx={{
+                                            fontFamily: "unset"
+                                        }}
+                                    >
+                                        Thêm
+                                    </Button>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </>
+                )
+            }
         </>
 
         //    end Body---------------------------------

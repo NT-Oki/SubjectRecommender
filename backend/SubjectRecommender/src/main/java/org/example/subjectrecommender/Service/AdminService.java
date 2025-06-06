@@ -45,7 +45,10 @@ public class AdminService {
         userService.updateUser(dto);
     }
 
-    public void addScore(ScoreAdd dto) {
+    public void addScore(ScoreAddDTO dto) {
         scoreService.addScore(dto);
+    }
+    public boolean checkExistbyId(String id) {
+        return userService.checkIdExists(id);
     }
 }

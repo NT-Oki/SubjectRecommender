@@ -133,4 +133,7 @@ public class UserService {
 //        }
         userRepository.save(user);
     }
+    public boolean checkIdExists(String id) {
+        return userRepository.existsById(id);
+    }
 }
