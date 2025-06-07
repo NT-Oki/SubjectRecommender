@@ -1,8 +1,6 @@
 package org.example.subjectrecommender.Controller;
 
-import org.example.subjectrecommender.Model.Score;
 import org.example.subjectrecommender.Service.AdminService;
-import org.example.subjectrecommender.Service.MainService;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -52,7 +50,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
 
     }
-    @GetMapping("/students")
+    @GetMapping("/users")
     public ResponseEntity<?> studentList(  @RequestParam(defaultValue = "0") int page,
                                            @RequestParam(defaultValue = "10") int size,
                                            @RequestParam(required = false) String userId,
@@ -89,7 +87,7 @@ public class AdminController {
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(in));
     }
-    @GetMapping("/students/export")
+    @GetMapping("/users/export")
     public ResponseEntity<InputStreamResource> exportUsersToExcel() throws IOException {
         List<UserDTO> dtoList = adminService.getAllUser();
 
@@ -121,16 +119,36 @@ public class AdminController {
         }
 
     }
+    //Thêm 1 score
     @PostMapping("/score")
-    public ResponseEntity<?> addScore(@RequestBody ScoreAdd dto){
+    public ResponseEntity<?> addScore(@RequestBody ScoreAddDTO dto){
         try{
             adminService.addScore(dto);
             return ResponseEntity.ok("Thêm 1 score thành công ");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 score thất bại");
         }
+    }
 
-
+    //Thêm 1 user
+    @PostMapping("/user")
+    public ResponseEntity<?> addUser(@RequestBody UserAddDTO dto){
+        try{
+            adminService.addUser(dto);
+            return ResponseEntity.ok("Thêm 1 user thành công ");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 user thất bại");
+        }
+    }
+    //check mssv để tránh trùng
+    @GetMapping("/users/exist")
+    public ResponseEntity<?> addUser(@RequestParam String userId){
+        try{
+           boolean isExist= adminService.checkExistbyId(userId);
+            return ResponseEntity.ok(isExist);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 

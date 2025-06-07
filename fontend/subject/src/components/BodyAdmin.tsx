@@ -6,8 +6,8 @@ import "@fontsource/noto-sans/latin.css"
 import InformationAdmin from "./InformationAdmin"
 import { Route, Routes } from "react-router-dom"
 import ScoreAdmin from "./ScoreAdmin"
-import SubjectAdmin from "./SubjectAdmin"
-import StudentAdmin from "./StudentAdmin"
+import StudentAdmin from "./UserAdmin"
+import CurriculumAdmin from "./CurricularAdmin"
 const BodyAdmin = () => {
     return (
         // body--------------------------------------
@@ -32,9 +32,8 @@ const BodyAdmin = () => {
             >
                 <Routes>
                     <Route path="score" element={<ScoreAdmin />} />
-                    <Route path="subject" element={<SubjectAdmin />} />
+                    <Route path="subject" element={<CurriculumAdmin />} />
                     <Route path="student" element={<StudentAdmin />} />
-
                 </Routes>
             </Box>
             {/* end left------------------------------------------ */}

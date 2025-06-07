@@ -1,24 +1,17 @@
 package org.example.subjectrecommender.Service;
 
-import ch.qos.logback.core.pattern.Converter;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.subjectrecommender.Model.Prerequisite;
 import org.example.subjectrecommender.Model.Score;
 import org.example.subjectrecommender.Model.Subject;
 import org.example.subjectrecommender.Model.User;
-import org.example.subjectrecommender.Repository.PrerequisiteRepository;
 import org.example.subjectrecommender.Repository.ScoreRepository;
 import org.example.subjectrecommender.Repository.SubjectRepository;
 import org.example.subjectrecommender.Repository.UserRepository;
-import org.example.subjectrecommender.dto.ScoreAdd;
+import org.example.subjectrecommender.dto.ScoreAddDTO;
 import org.example.subjectrecommender.dto.ScoreAdminDto;
 import org.example.subjectrecommender.dto.ScoreResponseDTO;
 import org.example.subjectrecommender.dto.ScoreUpdateDTO;
@@ -26,17 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
-    @Service
+@Service
     public class ScoreService {
         @Autowired
         ScoreRepository scoreRepository;
@@ -175,7 +163,7 @@ public Page<ScoreAdminDto> getAllScorePageWithFilterUsingQuery(
 
         }
 
-        public void addScore(ScoreAdd dto) {
+        public void addScore(ScoreAddDTO dto) {
             Score find = scoreRepository.findBySubjectIdAndUserIdAndSemesterAndYear(dto.getSubjectId(), dto.getUserId(), dto.getSemester(), dto.getYear());
             if (find != null) {
                 System.out.println("Đã tồn tại score, thực hiện cập nhập score id" + find.getId() +"với :"+dto.getScore() );

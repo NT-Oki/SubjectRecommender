@@ -22,9 +22,10 @@ const API_ENDPOINTS = {
       SCORE:`${ADMIN_URL}/score`,
     },
     STUDENT: {
-      LISTUSER:`${ADMIN_URL}/students`,
-      EXPORT:`${ADMIN_URL}/students/export`,
-      USER:`${ADMIN_URL}/student`,
+      LISTUSER:`${ADMIN_URL}/users`,
+      EXPORT:`${ADMIN_URL}/users/export`,
+      USER:`${ADMIN_URL}/user`,
+      CHECKEXIST: `${ADMIN_URL}/users/exist`,
     }
   }
 };
