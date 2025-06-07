@@ -15,9 +15,9 @@ public class CurriculumCourseService {
     public void save(CurriculumCourse curriculumCourse) {
         curriculumCourseRepository.save(curriculumCourse);
     }
-    public List<CurriculumCourse> findAlLByGroup() {
-        List<CurriculumCourse> curriculumCourseList = curriculumCourseRepository.findAll();
-
-    }
+//    public List<CurriculumCourse> findAlLByGroup() {
+//        List<CurriculumCourse> curriculumCourseList = curriculumCourseRepository.findAll();
+//
+//    }
 
 }

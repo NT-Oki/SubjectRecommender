@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, Input, FormHelperText, InputLabel, Select, MenuItem } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, FormHelperText, InputLabel, Select, MenuItem } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -8,9 +8,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faClock, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
-import Draggable from 'react-draggable';
-import Header from "./Header"
+import { faCheck, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 const StudentAdmin = () => {
     interface UserDTO {
         id: string;
@@ -481,7 +479,7 @@ const StudentAdmin = () => {
                                             fullWidth margin="dense"
                                             value={mssvAdd}
                                             onChange={(e) => {
-                                                const value = mssvAdd;
+                                              
                                                 const input = e.target.value;
 
                                                 // Chỉ cho phép ký tự số (0-9)
