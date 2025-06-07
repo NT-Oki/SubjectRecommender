@@ -7,7 +7,7 @@ import InformationAdmin from "./InformationAdmin"
 import { Route, Routes } from "react-router-dom"
 import ScoreAdmin from "./ScoreAdmin"
 import StudentAdmin from "./UserAdmin"
-import CurriculumAdmin from "./CurricularAdmin"
+import CurriculumAdmin from "./CurriculumAdmin"
 const BodyAdmin = () => {
     return (
         // body--------------------------------------

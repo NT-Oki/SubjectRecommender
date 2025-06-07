@@ -1,5 +1,6 @@
 package org.example.subjectrecommender.Service;
 
+import org.example.subjectrecommender.Model.CurriculumCourse;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminService {
@@ -16,6 +18,8 @@ public class AdminService {
     ScoreService scoreService;
     @Autowired
     UserService userService;
+    @Autowired
+    CurriculumCourseService curriculumCourseService;
     public List<ScoreAdminDto> getAllScore() {
         return scoreService.getAll();
     }
@@ -54,5 +58,11 @@ public class AdminService {
 
     public void addUser(UserAddDTO dto) {
          userService.addUser(dto);
+    }
+    public Map<String,List<CurriculumCourseDTO>> getAll(String curriculumId, String subjectSearch){
+        return curriculumCourseService.findAlLGroupByCurriculumId(curriculumId,subjectSearch);
+    }
+    public ByteArrayInputStream exportCurriculum(String curriculumId, String subjectSearch ) throws IOException {
+        return curriculumCourseService.export(curriculumId,subjectSearch);
     }
 }

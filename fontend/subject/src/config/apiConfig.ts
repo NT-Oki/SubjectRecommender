@@ -26,6 +26,10 @@ const API_ENDPOINTS = {
       EXPORT:`${ADMIN_URL}/users/export`,
       USER:`${ADMIN_URL}/user`,
       CHECKEXIST: `${ADMIN_URL}/users/exist`,
+    },
+    CURRICULUM:{
+      LIST: `${ADMIN_URL}/curriculum`,
+      EXPORT : `${ADMIN_URL}/curriculum/export`,
     }
   }
 };

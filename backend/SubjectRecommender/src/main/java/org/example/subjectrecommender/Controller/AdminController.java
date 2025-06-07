@@ -1,5 +1,6 @@
 package org.example.subjectrecommender.Controller;
 
+import org.example.subjectrecommender.Model.CurriculumCourse;
 import org.example.subjectrecommender.Service.AdminService;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,6 +149,37 @@ public class AdminController {
             return ResponseEntity.ok(isExist);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/curriculum")
+    public ResponseEntity<?> getCurriculumCourse(@RequestParam String curriculumId, @RequestParam String subjectSearch){
+        try{
+            Map<String, List<CurriculumCourseDTO>> listCurriculumCourse= adminService.getAll(curriculumId,subjectSearch);
+            Map<String,Object> result = new HashMap<>();
+            result.put("listCurriculumCourse",listCurriculumCourse);
+            return ResponseEntity.ok(result);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage()+" Lấy thông tin chương trình đào tạo thất bại "+curriculumId);
+        }
+
+    }
+    @GetMapping("/curriculum/export")
+    public ResponseEntity<?> exportCurriculumCourse(@RequestParam String curriculumId, @RequestParam String subjectSearch){
+        try {
+            ByteArrayInputStream excelFile = adminService.exportCurriculum(curriculumId, subjectSearch);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=curriculum_" + curriculumId + ".xlsx");
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(new InputStreamResource(excelFile));
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Export chương trình đào tạo thất bại với " + curriculumId + " và " + subjectSearch + ". Lỗi: " + e.getMessage());
         }
     }
 
