@@ -56,7 +56,7 @@ const ListScore = () => {
                 setData(response.data);
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
-            } finally{
+            } finally {
                 setIsLoading(false);
             }
         };
@@ -66,95 +66,95 @@ const ListScore = () => {
 
     return (
         // body--------------------------------------
-     <>
-                <Box
+        <>
+            <Box
+                sx={{
+                    backgroundColor: "#3EBE30",
+                    display: "flex",
+                    alignItems: "center",
+                    paddingLeft: "30px",
+                    height: "24px",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 12,
+                }}
+            >
+                <GiTwirlyFlower />
+                <Typography
                     sx={{
-                        backgroundColor: "#3EBE30",
-                        display: "flex",
-                        alignItems: "center",
-                        paddingLeft: "30px",
-                        height: "24px",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 12,
+
+                        fontFamily: "sans-serif",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        color: "white",
+                        paddingLeft: "5px"
                     }}
                 >
-                    <GiTwirlyFlower />
-                    <Typography
-                        sx={{
+                    CHƯƠNG TRÌNH ĐÀO TẠO
+                </Typography>
+            </Box>
+            <Box
+                sx={{
+                    backgroundColor: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    paddingLeft: "30px",
+                    height: "15px",
+                    position: "sticky",
+                    top: 24,
+                    zIndex: 11,
+                }}
+            >
+            </Box>
 
-                            fontFamily: "sans-serif",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            color: "white",
-                            paddingLeft: "5px"
-                        }}
-                    >
-                        CHƯƠNG TRÌNH ĐÀO TẠO
-                    </Typography>
-                </Box>
-                <Box
-                    sx={{
-                        backgroundColor: "white",
+            <Box
+                sx={{
+                    backgroundColor: "#FFA500",
+                    display: "flex",
+                    alignItems: "center",
+                    paddingLeft: "30px",
+                    height: "35px",
+                    position: "sticky",
+                    top: 39,
+                    zIndex: 10
+                    ,
+
+                    "& > *:not(:last-child)": {
+                        borderRight: "1px solid white",
+
+                    },
+                    "& > *": {
+                        margin: "auto",
+                        fontFamily: "sans-serif",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        color: "white",
+                        height: "100%",
                         display: "flex",
                         alignItems: "center",
-                        paddingLeft: "30px",
-                        height: "15px",
-                        position: "sticky",
-                        top: 24,
-                        zIndex: 11,
-                    }}
-                >
-                </Box>
+                        justifyContent: "center"
 
-                <Box
-                    sx={{
-                        backgroundColor: "#FFA500",
-                        display: "flex",
-                        alignItems: "center",
-                        paddingLeft: "30px",
-                        height: "35px",
-                        position: "sticky",
-                        top: 39,
-                        zIndex: 10
-                        ,
+                    },
+                }}
+            >
+                <Typography flex={0.2}>STT</Typography>
+                <Typography flex={1}>Mã MH</Typography>
+                <Typography flex={2}>Tên môn học</Typography>
+                <Typography flex={0.5}>Số tín chỉ</Typography>
+                <Typography flex={1}>Môn tiên quyết</Typography>
+                <Typography flex={0.6}>Môn bắt buộc</Typography>
+                <Typography flex={0.4}>Đã học</Typography>
+                <Typography flex={1}>Điểm</Typography>
 
-                        "& > *:not(:last-child)": {
-                            borderRight: "1px solid white",
+            </Box>
+            {/* ///////// */}
 
-                        },
-                        "& > *": {
-                            margin: "auto",
-                            fontFamily: "sans-serif",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            color: "white",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-
-                        },
-                    }}
-                >
-                    <Typography flex={0.2}>STT</Typography>
-                    <Typography flex={1}>Mã MH</Typography>
-                    <Typography flex={2}>Tên môn học</Typography>
-                    <Typography flex={0.5}>Số tín chỉ</Typography>
-                    <Typography flex={1}>Môn tiên quyết</Typography>
-                    <Typography flex={0.6}>Môn bắt buộc</Typography>
-                    <Typography flex={0.4}>Đã học</Typography>
-                    <Typography flex={1}>Điểm</Typography>
-
-                </Box>
-                {/* ///////// */}
-
-              {isLoading?
-            (
-                 <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
-        </Box>
-            )  :data ?( Object.entries(data).map(([key, scoreList]) => (
+            {isLoading ?
+                (
+                    <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : data ? (Object.entries(data).map(([key, scoreList]) => (
 
                     <Fragment key={key}>
                         <Box
@@ -167,9 +167,9 @@ const ListScore = () => {
                             }}
                         >
                             <Typography
-                            sx={{
-                                fontWeight: "bold",
-                            }}
+                                sx={{
+                                    fontWeight: "bold",
+                                }}
                             >
                                 {key}
                             </Typography>
@@ -209,8 +209,8 @@ const ListScore = () => {
                                 <Typography flex={2}>{score.subject?.subjectName}</Typography>
                                 <Typography flex={0.5}>{score.subject?.credit}</Typography>
                                 <Typography flex={1}>
-                                    {score.preSubjects.map((subject:Subject)=>
-                                    subject.id
+                                    {score.preSubjects.map((subject: Subject) =>
+                                        subject.id
                                     ).join(`,`)}
                                 </Typography>
                                 <Typography
@@ -225,9 +225,9 @@ const ListScore = () => {
                         ))}
                     </Fragment>)
                 )) : null
-            }  
-          </>
-           
+            }
+        </>
+
         //    end Body---------------------------------
     )
 }

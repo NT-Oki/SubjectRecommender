@@ -7,12 +7,15 @@ plugins {
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 
-sourceCompatibility = '21'
-targetCompatibility = '21'
+sourceCompatibility = '22'
+targetCompatibility = '22'
 
 repositories {
     mavenCentral()
     mavenLocal()
+    flatDir {
+        dirs 'libs'  // thư mục chứa spmf.jar
+    }
 }
 
 dependencies {
@@ -24,8 +27,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
-    implementation 'com.example.spmf:spmf:1.0'
+//    implementation 'com.example.spmf:spmf:1.0'
 //    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation name: 'spmf'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
