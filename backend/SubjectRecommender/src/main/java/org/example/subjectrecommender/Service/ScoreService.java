@@ -174,20 +174,32 @@ public Page<ScoreAdminDto> getAllScorePageWithFilterUsingQuery(
                     find.setPassed(0);
                 }
                 scoreRepository.save(find);
+
             } else {
+                Optional<User> userOpt = userRepository.findById(dto.getUserId());
+                if (userOpt.isEmpty()) {
+                    System.out.println("User: "+dto.getUserId()+ "không tồn tại");
+                    return;
+                }
+                User user = userOpt.get();
+                if(dto.getYear()<user.getEnrollmentYear()){
+                    System.out.println("Year:"+dto.getYear()+" không hợp lệ với user"+dto.getUserId());
+                    return;
+                }
+                Optional<Subject> subjectOpt = subjectRepository.findById(dto.getSubjectId());
+                if(subjectOpt.isEmpty()){
+                    System.out.println("Subject :"+dto.getSubjectId()+" không tồn tại");
+                    return;
+                }
+               Subject subject = subjectOpt.get();
+                int passed = dto.getScore() >= 5 ? 1 : 0;
                 Score score = new Score();
-                User user = userRepository.getReferenceById(dto.getUserId());
-                Subject subject = subjectRepository.getReferenceById(dto.getSubjectId());
                 score.setUser(user);
                 score.setSubject(subject);
                 score.setSemester(dto.getSemester());
                 score.setYear(dto.getYear());
                 score.setScore(dto.getScore());
-                if (dto.getScore() >= 5) {
-                    score.setPassed(1);
-                } else {
-                    score.setPassed(0);
-                }
+                score.setPassed(passed);
                 scoreRepository.save(score);
                 System.out.println(" thêm score mới thành công");
             }

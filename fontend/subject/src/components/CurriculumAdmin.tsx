@@ -8,7 +8,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSquarePlus, faUserPlus, faXmark } from "@fortawesome/free-solid-svg-icons"
+import { faSquarePlus, faXmark } from "@fortawesome/free-solid-svg-icons"
 const CurriculumAdmin = () => {
     interface SubjectGroup {
         id: string;
@@ -42,12 +42,14 @@ const CurriculumAdmin = () => {
     type DataType = {
         [key: string]: CurriculumCourse[];
     };
+    const years = Array.from({ length: 2 }, (_, i) => 2020 + i);
     const token = sessionStorage.getItem("token");
     const [data, setData] = useState<DataType | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [searchSubjectId, setSearchSubjectId] = useState<string>("");
     const [searchCurriculumVersion, setSearchCurriculumVersion] = useState<string | null>("7480201_2020");
     const [isAdd, setIsAdd] = useState<boolean>(true);
+    const [versionNameAdd, setVersionNameAdd] = useState<string>("");
     useEffect(() => {
         const fetchUserScore = async () => {
             try {
@@ -95,7 +97,7 @@ const CurriculumAdmin = () => {
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'curriculum_' + searchCurriculumVersion+ '.xlsx'; // Tên file khi lưu
+            a.download = 'curriculum_' + searchCurriculumVersion + '.xlsx'; // Tên file khi lưu
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -107,7 +109,7 @@ const CurriculumAdmin = () => {
     };
 
 
-    function handleAdd(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    function handleAdd(): void {
         throw new Error("Function not implemented.")
     }
 
@@ -315,9 +317,9 @@ const CurriculumAdmin = () => {
                                         color="warning"
                                         size="small"
                                         sx={{
-                                            ":hover":{
-                                                backgroundColor:"red",
-                                                color:"white"
+                                            ":hover": {
+                                                backgroundColor: "red",
+                                                color: "white"
                                             }
                                         }}
                                     >
@@ -333,7 +335,7 @@ const CurriculumAdmin = () => {
                                         justifyContent: 'center',
                                         gap: 2,
                                         mb: 2,
-                                        mt:2,
+                                        mt: 2,
                                     }}
                                 >
                                     <FontAwesomeIcon icon={faSquarePlus} color="orange" style={{ fontSize: '30px', verticalAlign: 'middle' }} />
@@ -341,7 +343,8 @@ const CurriculumAdmin = () => {
                                         Thêm chương trình đào tạo
                                     </Typography>
                                 </Box>
-                                {/* năm nhập học */}
+                               
+                                 {/* năm nhập học */}
                                 <Box
                                     sx={{
                                         display: "flex",
@@ -355,7 +358,7 @@ const CurriculumAdmin = () => {
                                         sx={{ width: "350px", marginTop: 2 }}
                                         error={isAdd}
                                     >
-                                        <InputLabel id="year-select-label">Năm nhập học</InputLabel>
+                                        <InputLabel id="year-select-label">Áp dụng từ năm</InputLabel>
                                         <Select
                                             labelId="year-select-label"
                                             value={isAdd}
@@ -364,77 +367,49 @@ const CurriculumAdmin = () => {
                                             }}
                                             label="Năm nhập học"
                                         >
-                                           
-                                                <MenuItem value={"u"}>
-                                                    aaa
-                                                </MenuItem>
+
+                                            <MenuItem value={"2023"}>
+                                                2023
+                                            </MenuItem>
                                         </Select>
                                         {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
                                     </FormControl>
                                 </Box>
-                                {/* Chương trình đào tạo */}
+                               
+                                {/* Chọn file Excel */}
                                 <Box
                                     sx={{
                                         display: "flex",
                                         margin: "10px",
                                         justifyContent: "space-between",
                                         alignItems: "center",
-
+                                        flexDirection: "column",
                                     }}
                                 >
-                                    <FormControl
-                                        sx={{ width: "350px", marginTop: 2 }}
-                                        error={isAdd}
-                                    >
-                                        <InputLabel id="year-select-label">Chương trình đào tạo</InputLabel>
-                                        <Select
-                                            labelId="year-select-label"
-                                            value={isAdd}
+                                    <FormControl fullWidth sx={{ mt: 2 }}>
+                                        <InputLabel shrink htmlFor="import-file-input">
+                                            Chọn file Excel để thêm dữ liệu
+                                        </InputLabel>
+                                        <input
+                                            id="import-file-input"
+                                            type="file"
+                                            accept=".xlsx, .xls"
                                             onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    // giả sử bạn có state này
+                                                }
                                             }}
-                                            label="Chương trình đào tạo"
-                                        >
-                                            <MenuItem value={"7480201_2020"}>
-                                                7480201_2020 (từ năm 2020)
-                                            </MenuItem>
-                                        </Select>
-                                        {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
+                                            style={{
+                                                marginTop: "10px",
+                                                border: "1px solid #ccc",
+                                                padding: "6px",
+                                                borderRadius: "4px",
+                                                backgroundColor: "#e1f7d5",
+                                            }}
+                                        />
                                     </FormControl>
                                 </Box>
-                                {/* Chọn file Excel */}
-<Box
-    sx={{
-        display: "flex",
-        margin: "10px",
-        justifyContent: "space-between",
-        alignItems: "center",
-        flexDirection: "column",
-    }}
->
-    <FormControl fullWidth sx={{ mt: 2 }}>
-        <InputLabel shrink htmlFor="import-file-input">
-            Chọn file Excel để thêm dữ liệu
-        </InputLabel>
-        <input
-            id="import-file-input"
-            type="file"
-            accept=".xlsx, .xls"
-            onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                   // giả sử bạn có state này
-                }
-            }}
-            style={{
-                marginTop: "10px",
-                border: "1px solid #ccc",
-                padding: "6px",
-                borderRadius: "4px",
-                backgroundColor: "#e1f7d5",
-            }}
-        />
-    </FormControl>
-</Box>
 
                                 {/* Button hành động */}
                                 <Box

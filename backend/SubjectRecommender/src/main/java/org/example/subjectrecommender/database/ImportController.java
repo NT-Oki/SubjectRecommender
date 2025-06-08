@@ -15,6 +15,12 @@ public class ImportController {
     public ImportController(ImportData importData) {
         this.importData = importData;
     }
+    /**
+     * 1.Thêm CurriculumVersion
+     * 2. Thêm Subject
+     * 3. Thêm preSubject
+     * 4. Thêm CurriculumCourse
+     */
 //    @PostMapping("/import")
 //    public ResponseEntity<String> importData() throws IOException {
 //        String path = "D:\\3.study\\TIỂU LUẬN\\data_2.xlsx";
