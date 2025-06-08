@@ -74,6 +74,7 @@ const InformationAdmin = () => {
 
 
         fetchUserScore();
+        selectItem(selectedItem);
     }, []);
 
     const checkPreNewPassword = (e: React.ChangeEvent<HTMLInputElement>) => {

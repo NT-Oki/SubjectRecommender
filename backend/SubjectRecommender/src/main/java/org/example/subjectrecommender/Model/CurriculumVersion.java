@@ -18,6 +18,8 @@ public class CurriculumVersion {
     private String versionName ;
     @Column(name = "effective_year")
     private int effectiveYear ;
+    @Column(name = "status")
+    private int status ;//0 inactive 1 active
     @OneToMany(mappedBy = "curriculumVersion")
     private List<User> students;
 

@@ -15,17 +15,27 @@ const API_ENDPOINTS = {
   CHANGEPASSWORD: `${AUTH_URL}/change-password`,
   FORGOTPASSWORD: `${AUTH_URL}/forgot-password`,
   CHECKTOKEN: `${AUTH_URL}/check-token`,
+  
   ADMIN:{
+    UPLOADFILE:`${ADMIN_URL}/upload-temp`,
+    PROGRESS: `${ADMIN_URL}/progress`,
     SCORE: {
       LISTSCORE:`${ADMIN_URL}/scores`,
       EXPORT:`${ADMIN_URL}/scores/export`,
       SCORE:`${ADMIN_URL}/score`,
+      IMPORT:`${ADMIN_URL}/scores/import`,
+      IMPORT_ASYNC:`${ADMIN_URL}/scores/import-async`,
+      
     },
     STUDENT: {
       LISTUSER:`${ADMIN_URL}/users`,
       EXPORT:`${ADMIN_URL}/users/export`,
       USER:`${ADMIN_URL}/user`,
       CHECKEXIST: `${ADMIN_URL}/users/exist`,
+    },
+    CURRICULUM:{
+      LIST: `${ADMIN_URL}/curriculum`,
+      EXPORT : `${ADMIN_URL}/curriculum/export`,
     }
   }
 };

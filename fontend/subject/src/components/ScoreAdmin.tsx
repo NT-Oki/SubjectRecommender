@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, FormLabel, RadioGroup, FormControlLabel, Radio, SelectChangeEvent } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, FormLabel, RadioGroup, FormControlLabel, Radio, SelectChangeEvent, LinearProgress } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -8,7 +8,8 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faPenToSquare, faSquarePlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { Label } from "@mui/icons-material"
 const ScoreAdmin = () => {
     interface UserDTO {
         id: string;
@@ -40,14 +41,14 @@ const ScoreAdmin = () => {
         utility: number;
         preSubjects: Subject[];
     }
-      interface ScoreAdd {
+    interface ScoreAdd {
         userId: string;
         subjectId: string;
         semester: number;
         score: number;
         year: number;
     }
-    
+
 
     const [data, setData] = useState<Score[] | null>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -64,13 +65,18 @@ const ScoreAdmin = () => {
     const [editScoreId, setEditScoreId] = useState<number | null>(null);
     const [isAdd, setIsAdd] = useState<boolean>(false);
     const [dataAdd, setDataAdd] = useState<ScoreAdd>({
-  userId: '',
-  subjectId: '',
-  semester: 0,
-  score: 0,
-  year: 0,
-});
-    
+        userId: '',
+        subjectId: '',
+        semester: 0,
+        score: 0,
+        year: 0,
+    });
+    const [isImport, setIsImport] = useState<boolean>(false);
+    const [progress, setProgress] = useState(0);
+    const [errorRows, setErrorRows] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
 
 
     const fetchUserScore = async () => {
@@ -170,37 +176,103 @@ const ScoreAdmin = () => {
         }
     };
 
-const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<any>) => {
-    const name = event.target.name;
-  const valueStr = event.target.value; // string
-  const value = Number(valueStr); // chuyển sang số nếu cần
-  setDataAdd(prev => ({
-    ...prev,
-    [name]: name === "semester" || name === "year" || name === "score" ? Number(value) : value
-  }));
-};
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<any>) => {
+        const name = event.target.name;
+        const valueStr = event.target.value; // string
+        const value = Number(valueStr); // chuyển sang số nếu cần
+        setDataAdd(prev => ({
+            ...prev,
+            [name]: name === "semester" || name === "year" || name === "score" ? Number(value) : value
+        }));
+    };
 
- const handleAdd = async () => {
-  try {
-    const res = await axios.post(API_ENDPOINTS.ADMIN.SCORE.SCORE, dataAdd, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    alert("Thêm điểm thành công");
-    setDataAdd({
-      userId: '',
-      subjectId: '',
-      semester: 0,
-      score: 0,
-      year: 0,
-    });
-    fetchUserScore(); // Cập nhật lại danh sách
-    console.log(res.data);
-  } catch (err: any) {
-    alert(err.response?.data || "Lỗi khi thêm điểm");
-  }
-};
+    const handleAdd = async () => {
+        try {
+            const res = await axios.post(API_ENDPOINTS.ADMIN.SCORE.SCORE, dataAdd, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            alert("Thêm điểm thành công");
+            setDataAdd({
+                userId: '',
+                subjectId: '',
+                semester: 0,
+                score: 0,
+                year: 0,
+            });
+            fetchUserScore(); // Cập nhật lại danh sách
+            console.log(res.data);
+        } catch (err: any) {
+            alert(err.response?.data || "Lỗi khi thêm điểm");
+        }
+    };
+    const handleFileChange = (e: any) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
+    const handleImport = async (e: any) => {
+        // const file = e.target.files[0];
+        if (!selectedFile) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        try {
+            const resUpload = await axios.post(API_ENDPOINTS.ADMIN.UPLOADFILE, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const fileId = resUpload.data.fileId;
+            const path = resUpload.data.filePath;
+            try {
+                const res = await axios.post(
+                    API_ENDPOINTS.ADMIN.SCORE.IMPORT,
+                    { fileId, path }, // gửi đúng body
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "multipart/form-data"
+                        },
+                    }
+                );
+                setErrorRows(res.data.erroRows);
+            } catch (err: any) {
+                console.error(err.response.data);
+                setUploading(false);
+                return;
+
+            }
+
+            const interval = setInterval(async () => {
+                try {
+                    const res = await axios.get(API_ENDPOINTS.ADMIN.PROGRESS, {
+                        params: { fileId },
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+                    setProgress(res.data);
+                    if (res.data >= 100) {
+                        clearInterval(interval);
+                        setUploading(false);
+                    }
+                } catch (err) {
+                    clearInterval(interval);
+                    setUploading(false);
+                    console.error("Lỗi khi lấy tiến trình import:", err);
+                }
+            }, 500);
+        } catch (err: any) {
+            setUploading(false);
+            console.error("Lỗi khi upload file:", err);
+
+        }
+
+    };
 
     return (
         // body--------------------------------------
@@ -261,7 +333,10 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaEl
                     onClick={handleSearchClick}
                 >Tìm</Button>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
-                <Button sx={{backgroundColor:"orangered"}} variant="contained" onClick={()=>setIsAdd(true)}>Thêm</Button>
+                <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => setIsAdd(true)}>Thêm</Button>
+                <Button variant="contained" color="success" onClick={() => {
+                    setIsImport(true);
+                }}>Import</Button>
             </Box>
 
             <Box
@@ -386,17 +461,17 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaEl
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             const parsed = Number(value);
-                                          if(value.length>5){
+                                            if (value.length > 5) {
                                                 scoreUpdate ?? score.score
-                                            }else{
-                                                  if (!isNaN(parsed) && parsed < 11) {
-                                                setScoreUpdate(parsed);
-                                            }else{
-                                                scoreUpdate ?? score.score
+                                            } else {
+                                                if (!isNaN(parsed) && parsed < 11) {
+                                                    setScoreUpdate(parsed);
+                                                } else {
+                                                    scoreUpdate ?? score.score
                                                 }
                                             }
                                         }}
-                                        inputProps={{ min: 0, step: 0.1}}
+                                        inputProps={{ min: 0, step: 0.1 }}
                                     />
                                 ) : (score.score)}
                             </Typography>
@@ -430,54 +505,120 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaEl
             <Typography mt={1} variant="body2" align="right">
                 Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
             </Typography>
-            {isAdd?(
-                 <Dialog open={isAdd} onClose={()=>setIsAdd(false)} >
-      <DialogTitle>Thêm điểm môn học</DialogTitle>
-      <DialogContent>
-        <TextField label="User ID" name="userId" fullWidth margin="dense" value={dataAdd.userId} onChange={handleChange} />
-        <TextField label="Subject ID" name="subjectId" fullWidth margin="dense" value={dataAdd.subjectId} onChange={handleChange} />
-      <FormControl fullWidth margin="dense">
-  <FormLabel id="semester-label" sx={{ mb: 1 }}>
-    Học kỳ
-  </FormLabel>
-  <Box display="flex" justifyContent="center">
-    <RadioGroup
-      row
-      aria-labelledby="semester-label"
-      name="semester"
-      value={dataAdd.semester.toString()}
-      onChange={handleChange}
-    >
-      <FormControlLabel value="1" control={<Radio />} label="HK1" />
-      <FormControlLabel value="2" control={<Radio />} label="HK2" />
-    </RadioGroup>
-  </Box>
-</FormControl>
-       <FormControl fullWidth margin="dense">
-  <InputLabel id="year-label">Year</InputLabel>
-  <Select
-    labelId="year-label"
-    id="year-select"
-    name="year"
-    value={dataAdd?.year || ''}
-    label="Year"
-    onChange={handleChange}
-  >
-    <MenuItem value={2020}>2020 - 2021</MenuItem>
-    <MenuItem value={2021}>2021 - 2022</MenuItem>
-    <MenuItem value={2022}>2022 - 2023</MenuItem>
-  </Select>
-</FormControl>
-        <TextField label="Score" name="score" type="number" fullWidth margin="dense" value={dataAdd.score} onChange={handleChange}  />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={()=>setIsAdd(false)}>Hủy</Button>
-        <Button variant="contained" onClick={handleAdd}>Lưu</Button>
-      </DialogActions>
-    </Dialog>
+            {isAdd ? (
+                <Dialog open={isAdd} onClose={() => setIsAdd(false)}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: "#e1f7d5",
+                                width: "400px"
+                            }
+                        }
+                    }}
+                >
+                    <DialogTitle>Thêm điểm môn học</DialogTitle>
+                    <DialogContent>
+                        <TextField label="User ID" name="userId" fullWidth margin="dense" value={dataAdd.userId} onChange={handleChange} />
+                        <TextField label="Subject ID" name="subjectId" fullWidth margin="dense" value={dataAdd.subjectId} onChange={handleChange} />
+                        <FormControl fullWidth margin="dense">
+                            <FormLabel id="semester-label" sx={{ mb: 1 }}>
+                                Học kỳ
+                            </FormLabel>
+                            <Box display="flex" justifyContent="center">
+                                <RadioGroup
+                                    row
+                                    aria-labelledby="semester-label"
+                                    name="semester"
+                                    value={dataAdd.semester.toString()}
+                                    onChange={handleChange}
+                                >
+                                    <FormControlLabel value="1" control={<Radio />} label="HK1" />
+                                    <FormControlLabel value="2" control={<Radio />} label="HK2" />
+                                </RadioGroup>
+                            </Box>
+                        </FormControl>
+                        <FormControl fullWidth margin="dense">
+                            <InputLabel id="year-label">Year</InputLabel>
+                            <Select
+                                labelId="year-label"
+                                id="year-select"
+                                name="year"
+                                value={dataAdd?.year || ''}
+                                label="Year"
+                                onChange={handleChange}
+                            >
+                                <MenuItem value={2020}>2020 - 2021</MenuItem>
+                                <MenuItem value={2021}>2021 - 2022</MenuItem>
+                                <MenuItem value={2022}>2022 - 2023</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField label="Score" name="score" type="number" fullWidth margin="dense" value={dataAdd.score} onChange={handleChange} />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setIsAdd(false)}>Hủy</Button>
+                        <Button variant="contained" onClick={handleAdd}>Lưu</Button>
+                    </DialogActions>
+                </Dialog>
 
-            ):null}
-           
+            ) : null}
+            <Dialog open={isImport} onClose={() => setIsImport(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "#e1f7d5",
+                            width: "400px"
+                        }
+                    }
+                }}
+            >
+                <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Thêm điểm từ file Excel</DialogTitle>
+                <DialogContent>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <InputLabel shrink htmlFor="import-file-input">
+                            Chọn file Excel để thêm dữ liệu
+                        </InputLabel>
+                        <input
+                            id="import-file-input"
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={(e) => handleFileChange(e)}
+                            style={{
+                                marginTop: "10px",
+                                border: "1px solid #ccc",
+                                padding: "6px",
+                                borderRadius: "4px",
+                                backgroundColor: "#e1f7d5",
+                            }}
+                        />
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsImport(false)}>Hủy</Button>
+                    <Button variant="contained" onClick={handleImport} >Lưu</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={uploading} onClose={() => setUploading(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "#e1f7d5",
+                            width: "400px"
+                        }
+                    }
+                }}
+            >
+                <DialogTitle style={{ fontFamily: "sans-serif" }}>Đang nhập dữ liệu điểm{progress} </DialogTitle>
+                <DialogContent>
+                    {/* <Label>Đang xử lí: {progress} %</Label> */}
+                    <progress value={progress} max={100}/>
+                        
+                    {/* <LinearProgress variant="determinate" value={progress} /> */}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUploading(false)}>Hủy</Button>
+                </DialogActions>
+            </Dialog>
+
         </>
 
         //    end Body---------------------------------

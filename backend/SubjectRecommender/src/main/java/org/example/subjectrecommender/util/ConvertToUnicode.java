@@ -18,6 +18,7 @@ public class ConvertToUnicode {
         // Chuyển thành chữ thường
         return result.toLowerCase();
     }
+
     public static List<Integer> extractNumbers(String input) {
         List<Integer> numbers = new ArrayList<>();
         Pattern pattern = Pattern.compile("\\d+");

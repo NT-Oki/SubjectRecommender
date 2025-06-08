@@ -1,14 +1,19 @@
 package org.example.subjectrecommender.Service;
 
+import org.example.subjectrecommender.Model.CurriculumCourse;
+import org.example.subjectrecommender.database.ImportData;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminService {
@@ -16,6 +21,10 @@ public class AdminService {
     ScoreService scoreService;
     @Autowired
     UserService userService;
+    @Autowired
+    CurriculumCourseService curriculumCourseService;
+    @Autowired
+    ImportData importData;
     public List<ScoreAdminDto> getAllScore() {
         return scoreService.getAll();
     }
@@ -54,5 +63,17 @@ public class AdminService {
 
     public void addUser(UserAddDTO dto) {
          userService.addUser(dto);
+    }
+    public Map<String,List<CurriculumCourseDTO>> getAll(String curriculumId, String subjectSearch){
+        return curriculumCourseService.findAlLGroupByCurriculumId(curriculumId,subjectSearch);
+    }
+    public ByteArrayInputStream exportCurriculum(String curriculumId, String subjectSearch ) throws IOException {
+        return curriculumCourseService.export(curriculumId,subjectSearch);
+    }
+    public List<ErrorRow> importScore(File file, String fileId) throws IOException {
+        return importData.importScore(file,fileId);
+    }
+    public void exportErrorRowsToExcel(List<ErrorRow> errorRows, String output) throws IOException {
+        importData.exportErrorRowsToExcel(errorRows,output);
     }
 }

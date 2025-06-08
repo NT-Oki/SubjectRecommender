@@ -1,5 +1,7 @@
 package org.example.subjectrecommender;
 
+import org.example.subjectrecommender.Model.CurriculumVersion;
+import org.example.subjectrecommender.Service.CurriculumVersionService;
 import org.example.subjectrecommender.Service.UserService;
 import org.example.subjectrecommender.database.ImportData;
 import org.springframework.boot.SpringApplication;
