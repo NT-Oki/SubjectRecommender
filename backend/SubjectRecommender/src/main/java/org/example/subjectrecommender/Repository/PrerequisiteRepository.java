@@ -14,4 +14,5 @@ public interface PrerequisiteRepository extends JpaRepository<Prerequisite, Long
     public List<Prerequisite> findBySubjectId(String id);
     @Query("SELECT p.prerequisiteSubject FROM Prerequisite p WHERE p.subject.id = :subjectId")
     List<Subject> getPreSubjectBySubjectId(@Param("subjectId") String subjectId);
+    List<Prerequisite> findBySubjectIn(List<Subject> subjects);
 }
