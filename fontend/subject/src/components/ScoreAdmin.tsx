@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, FormLabel, RadioGroup, FormControlLabel, Radio, SelectChangeEvent, LinearProgress } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Tooltip, TextField, Select, MenuItem, Pagination, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, FormLabel, RadioGroup, FormControlLabel, Radio, SelectChangeEvent } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -8,8 +8,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPenToSquare, faSquarePlus, faXmark } from '@fortawesome/free-solid-svg-icons'
-import { Label } from "@mui/icons-material"
+import { faCheck, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 const ScoreAdmin = () => {
     interface UserDTO {
         id: string;
@@ -73,7 +72,7 @@ const ScoreAdmin = () => {
     });
     const [isImport, setIsImport] = useState<boolean>(false);
     const [progress, setProgress] = useState(0);
-    const [errorRows, setErrorRows] = useState([]);
+    // const [errorRows, setErrorRows] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -213,7 +212,7 @@ const ScoreAdmin = () => {
             setSelectedFile(file);
         }
     };
-    const handleImport = async (e: any) => {
+    const handleImport = async () => {
         // const file = e.target.files[0];
         if (!selectedFile) return;
 
@@ -239,7 +238,7 @@ const ScoreAdmin = () => {
                         },
                     }
                 );
-                setErrorRows(res.data.erroRows);
+                // setErrorRows(res.data.erroRows);
             } catch (err: any) {
                 console.error(err.response.data);
                 setUploading(false);

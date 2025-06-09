@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, TextField, Select, MenuItem, Button, FormControl, InputLabel, FormHelperText } from "@mui/material"
+import { Box, Typography, CircularProgress, TextField, Select, MenuItem, Button, FormControl, InputLabel } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -42,14 +42,14 @@ const CurriculumAdmin = () => {
     type DataType = {
         [key: string]: CurriculumCourse[];
     };
-    const years = Array.from({ length: 2 }, (_, i) => 2020 + i);
+    // const years = Array.from({ length: 2 }, (_, i) => 2020 + i);
     const token = sessionStorage.getItem("token");
     const [data, setData] = useState<DataType | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [searchSubjectId, setSearchSubjectId] = useState<string>("");
     const [searchCurriculumVersion, setSearchCurriculumVersion] = useState<string | null>("7480201_2020");
     const [isAdd, setIsAdd] = useState<boolean>(true);
-    const [versionNameAdd, setVersionNameAdd] = useState<string>("");
+    // const [versionNameAdd, setVersionNameAdd] = useState<string>("");
     useEffect(() => {
         const fetchUserScore = async () => {
             try {
@@ -362,7 +362,7 @@ const CurriculumAdmin = () => {
                                         <Select
                                             labelId="year-select-label"
                                             value={isAdd}
-                                            onChange={(e) => {
+                                            onChange={() => {
 
                                             }}
                                             label="Năm nhập học"
