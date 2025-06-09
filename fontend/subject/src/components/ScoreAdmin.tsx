@@ -239,6 +239,8 @@ const ScoreAdmin = () => {
                     }
                 );
                 // setErrorRows(res.data.erroRows);
+                console.log(res.data.erroRows);
+                
             } catch (err: any) {
                 console.error(err.response.data);
                 setUploading(false);
