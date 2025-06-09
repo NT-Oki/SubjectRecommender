@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,108 +84,182 @@ public class MainService {
         algo.printStats();
     }
     //3
-        public List<HUItemset> readAndSaveItemsets(String efimResultFile) throws IOException {
-            HUItemsetRepository.deleteAll();
-            List<HUItemset> itemsets = new ArrayList<>();
-            List<String> lines = Files.readAllLines(Paths.get(efimResultFile));
+    public List<HUItemset> readAndSaveItemsets(String efimResultFile) throws IOException {
+        HUItemsetRepository.deleteAll();
+        List<HUItemset> itemsets = new ArrayList<>();
+        List<String> lines = Files.readAllLines(Paths.get(efimResultFile));
 
-            for (String line : lines) {
-                String[] parts = line.split(" #UTIL:");
-                if (parts.length != 2) continue;
+        for (String line : lines) {
+            String[] parts = line.split(" #UTIL:");
+            if (parts.length != 2) continue;
 
-                List<String> items = Arrays.stream(parts[0].trim().split(" "))
-                        .map(String::trim)
-                        .collect(Collectors.toList());
+            List<String> items = Arrays.stream(parts[0].trim().split(" "))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
 
-                float utility = Float.parseFloat(parts[1].trim());
+            float utility = Float.parseFloat(parts[1].trim());
 
-                HUItemset itemset = new HUItemset();
-                itemset.setItems(items);
-                itemset.setUtility(utility);
-                itemsets.add(itemset);
-            }
-
-            HUItemsetRepository.saveAll(itemsets);
-
-            return itemsets;
+            HUItemset itemset = new HUItemset();
+            itemset.setItems(items);
+            itemset.setUtility(utility);
+            itemsets.add(itemset);
         }
 
+        HUItemsetRepository.saveAll(itemsets);
+
+        return itemsets;
+    }
 
 
-    /**
-     * xét subject đưa vào có đủ điều kiện để được gợi ý không
-     * 1.
-     * @param subject
-     * @return
-     */
-    public boolean isEligible(Subject subject, int semester, Set<String> passedSubjectIds) {
-    //     Kiểm tra các môn tiên quyết (nếu có) của subject đã pass chưa
-        List<Prerequisite> prerequisites =prerequisiteRepository.findBySubject(subject);
-        for (Prerequisite prerequisite : prerequisites) {
-            Subject preSubject=prerequisite.getPrerequisiteSubject();
-            if (!passedSubjectIds.contains(preSubject.getId())) {
-                return false; // Chưa học hoặc chưa qua môn tiên quyết
-            }
-        }
+    //
+//    /**
+//     * xét subject đưa vào có đủ điều kiện để được gợi ý không
+//     * 1.
+//     * @param subject
+//     * @return
+//     */
+//    public boolean isEligible(Subject subject, int semester, Set<String> passedSubjectIds) {
+//    //     Kiểm tra các môn tiên quyết (nếu có) của subject đã pass chưa
+//        List<Prerequisite> prerequisites =prerequisiteRepository.findBySubject(subject);
+//        for (Prerequisite prerequisite : prerequisites) {
+//            Subject preSubject=prerequisite.getPrerequisiteSubject();
+//            if (!passedSubjectIds.contains(preSubject.getId())) {
+//                return false; // Chưa học hoặc chưa qua môn tiên quyết
+//            }
+//        }
+//
+//        // kiểm tra subject có được mở trong kỳ hiện tại không
+//        List<CurriculumCourse> curriculumCourseList=curriculumCourseRepository.findCurriculumCourseBySemester(semester);
+//        Set<String> subjectIdsInCurriculum = curriculumCourseList.stream()
+//                .map(cc -> cc.getSubject().getId())
+//                .collect(Collectors.toSet());
+//        if(!subjectIdsInCurriculum.contains(subject.getId())) {
+//            return false;
+//        }
+//
+//        return true;
+//    }
+////4
+//public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
+//    // Môn đã học và pass rồi
+//    Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
+//            .stream()
+//            .map(score -> score.getSubject().getId())
+//            .collect(Collectors.toSet());
+//    // Lấy toàn bộ HUItemsets và sắp xếp theo utility giảm dần
+//    List<HUItemset> huItemsets = HUItemsetRepository.findAll();
+//    huItemsets.sort((a, b) -> Float.compare(b.getUtility(), a.getUtility())); // utility giảm dần
+//    // Tránh gợi ý trùng
+//    Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
+//    // Duyệt từng itemset theo utility giảm dần
+//    for (HUItemset huItemset : huItemsets) {
+//        List<String> itemIds = huItemset.getItems();
+//        // Nếu sinh viên đã học ít nhất 1 môn trong itemset → xét gợi ý
+//        boolean hasLearnedOne = itemIds.stream().anyMatch(learnedSubjectIds::contains);
+//        if (!hasLearnedOne) continue;
+//        long countLearned= itemIds.stream().filter(learnedSubjectIds::contains).count();
+//        double coverage= Math.round((double)countLearned/itemIds.size()*10)/10.0;
+//        System.out.println(coverage);
+////        if (coverage<0.5) continue;
+//        for (String subjectId : itemIds) {
+//
+//            if (!learnedSubjectIds.contains(subjectId)) {  //nếu nó chưa học hoặc chưa pass
+//                Subject subject = subjectRepository.findById(subjectId).orElse(null);
+//                if (subject != null && isEligible(subject, semester, learnedSubjectIds)) {
+//                    List<Subject> preSubjects = prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
+//                    SubjectRecommendDTO dto = new SubjectRecommendDTO();
+//                    dto.setSubject(subject);
+//                    dto.setUtility(huItemset.getUtility());
+//                    dto.setPreSubjects(preSubjects);
+//                    suggestions.add(dto);
+//                }
+//            }
+//        }
+//    }
+//
+//    // Áp dụng phân trang thủ công
+//    List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
+//    int total = allSuggestions.size();
+//    int start = (int) pageable.getOffset();
+//    int end = Math.min((start + pageable.getPageSize()), total);
+//    List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
+//
+//    return new PageImpl<>(pageContent, pageable, total);
+//}
+    public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
+        // Môn đã học và pass rồi
+        Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
+                .stream()
+                .map(score -> score.getSubject().getId())
+                .collect(Collectors.toSet());
 
-        // kiểm tra subject có được mở trong kỳ hiện tại không
-        List<CurriculumCourse> curriculumCourseList=curriculumCourseRepository.findCurriculumCourseBySemester(semester);
+        // Lấy danh sách curriculum môn học trong kỳ (1 lần)
+        List<CurriculumCourse> curriculumCourseList = curriculumCourseRepository.findCurriculumCourseBySemester(semester);
         Set<String> subjectIdsInCurriculum = curriculumCourseList.stream()
                 .map(cc -> cc.getSubject().getId())
                 .collect(Collectors.toSet());
-        if(!subjectIdsInCurriculum.contains(subject.getId())) {
-            return false;
-        }
 
-        return true;
-    }
-//4
-public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
-    // Môn đã học và pass rồi
-    Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
-            .stream()
-            .map(score -> score.getSubject().getId())
-            .collect(Collectors.toSet());
-    // Lấy toàn bộ HUItemsets và sắp xếp theo utility giảm dần
-    List<HUItemset> huItemsets = HUItemsetRepository.findAll();
-    huItemsets.sort((a, b) -> Float.compare(b.getUtility(), a.getUtility())); // utility giảm dần
-    // Tránh gợi ý trùng
-    Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
-    // Duyệt từng itemset theo utility giảm dần
-    for (HUItemset huItemset : huItemsets) {
-        List<String> itemIds = huItemset.getItems();
-        // Nếu sinh viên đã học ít nhất 1 môn trong itemset → xét gợi ý
-        boolean hasLearnedOne = itemIds.stream().anyMatch(learnedSubjectIds::contains);
-        if (!hasLearnedOne) continue;
-        long countLearned= itemIds.stream().filter(learnedSubjectIds::contains).count();
-        double coverage= Math.round((double)countLearned/itemIds.size()*10)/10.0;
-        System.out.println(coverage);
-//        if (coverage<0.5) continue;
-        for (String subjectId : itemIds) {
+        // Lấy HUItemsets theo utility giảm dần (giả sử bạn có method này)
+        List<HUItemset> huItemsets = HUItemsetRepository.findAllByOrderByUtilityDesc();
 
-            if (!learnedSubjectIds.contains(subjectId)) {  //nếu nó chưa học hoặc chưa pass
-                Subject subject = subjectRepository.findById(subjectId).orElse(null);
-                if (subject != null && isEligible(subject, semester, learnedSubjectIds)) {
-                    List<Subject> preSubjects = prerequisiteService.getAllPrerequisiteSubjectsBySubjectId(subject.getId());
-                    SubjectRecommendDTO dto = new SubjectRecommendDTO();
-                    dto.setSubject(subject);
-                    dto.setUtility(huItemset.getUtility());
-                    dto.setPreSubjects(preSubjects);
-                    suggestions.add(dto);
+        // Gom tất cả subjectId từ HUItemsets (để load sẵn Subjects, tránh gọi từng cái)
+        Set<String> allSubjectIds = huItemsets.stream()
+                .flatMap(h -> h.getItems().stream())
+                .collect(Collectors.toSet());
+
+        // Load tất cả Subject 1 lần
+        Map<String, Subject> subjectMap = subjectRepository.findAllById(allSubjectIds).stream()
+                .collect(Collectors.toMap(Subject::getId, Function.identity()));
+
+        // Load tất cả prerequisite 1 lần cho các subject cần xét (cần thêm method findBySubjects)
+        List<Prerequisite> allPrerequisites = prerequisiteRepository.findBySubjectIn(new ArrayList<>(subjectMap.values()));
+        // Map subjectId -> List<Prerequisite>
+        Map<String, List<Prerequisite>> prerequisiteMap = allPrerequisites.stream()
+                .collect(Collectors.groupingBy(pr -> pr.getSubject().getId()));
+
+        Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
+
+        for (HUItemset huItemset : huItemsets) {
+            List<String> itemIds = huItemset.getItems();
+            boolean hasLearnedOne = itemIds.stream().anyMatch(learnedSubjectIds::contains);
+            if (!hasLearnedOne) continue;
+
+            for (String subjectId : itemIds) {
+                if (!learnedSubjectIds.contains(subjectId)) {
+                    Subject subject = subjectMap.get(subjectId);
+                    if (subject == null) continue;
+
+                    if (!subjectIdsInCurriculum.contains(subjectId)) continue;
+
+                    // Kiểm tra eligibility dựa trên prerequisite đã load sẵn
+                    List<Prerequisite> prerequisites = prerequisiteMap.getOrDefault(subjectId, Collections.emptyList());
+                    boolean eligible = prerequisites.stream()
+                            .allMatch(pr -> learnedSubjectIds.contains(pr.getPrerequisiteSubject().getId()));
+
+                    if (eligible) {
+                        List<Subject> preSubjects = prerequisites.stream()
+                                .map(Prerequisite::getPrerequisiteSubject)
+                                .collect(Collectors.toList());
+
+                        SubjectRecommendDTO dto = new SubjectRecommendDTO();
+                        dto.setSubject(subject);
+                        dto.setUtility(huItemset.getUtility());
+                        dto.setPreSubjects(preSubjects);
+                        suggestions.add(dto);
+                    }
                 }
             }
         }
+
+        // Phân trang thủ công
+        List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
+        int total = allSuggestions.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), total);
+        List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
+
+        return new PageImpl<>(pageContent, pageable, total);
     }
-
-    // Áp dụng phân trang thủ công
-    List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
-    int total = allSuggestions.size();
-    int start = (int) pageable.getOffset();
-    int end = Math.min((start + pageable.getPageSize()), total);
-    List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
-
-    return new PageImpl<>(pageContent, pageable, total);
-}
 
     /**
      * Lấy ra danh sách DTO( nhóm môn học, số tín chỉ yêu cầu, số tín chỉ đã học
