@@ -1,8 +1,8 @@
 package org.example.subjectrecommender.Service;
-
-import ca.pfv.spmf.algorithms.frequentpatterns.efim.AlgoEFIM;
+import ca.pfv.spmf.algorithms.sequential_rules.husrm.AlgoHUSRM;
 import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Repository.*;
+import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,13 +11,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,74 +41,132 @@ public class MainService {
     private UserRepository userRepository;
     @Autowired
     private SubjectGroupService subjectGroupService;
+    @Autowired
+    ValueProperties valueProperties;
+    @Autowired
+    RuleRepository ruleRepository;
+    @Autowired
+    RuleActiveRepository ruleActiveRepository;
 
     //1
-    public void exportTransactionFile(String outputPath) throws IOException {
+    public void exportTransactionFile() throws IOException {
+        String outputPath= valueProperties.getFileExportTransaction();
+        boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
         List<Score> scores = scoreRepository.findAll();
-
         Map<String, List<Score>> groupedByUser = scores.stream()
                 .collect(Collectors.groupingBy(score -> score.getUser().getId()));
         int total=0;
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
             for (Map.Entry<String, List<Score>> entry : groupedByUser.entrySet()) {
                 List<Score> userScores = entry.getValue();
+                userScores.sort(Comparator
+                        .comparing(Score::getYear)
+                        .thenComparing(Score::getSemester));
+                List<String> itemIDs = new ArrayList<>();
+                List<String> itemUtilities = new ArrayList<>();
+                long transactionUtilitySum = 0;
+                for (Score score : userScores) {
+                    if (filterPassedSubjects && score.getPassed() != 1) {
+                        continue; // Bỏ qua nếu đang lọc và môn này chưa pass
+                    }
 
-                List<String> items = userScores.stream()
-                        .map(score -> String.valueOf(score.getSubject().getId()))
-                        .collect(Collectors.toList());
-
-                List<String> utilities = userScores.stream()
-                        .map(score -> String.valueOf(Math.round(score.getUtility())))
-                        .collect(Collectors.toList());
-
-                // Sử dụng double để chính xác, ép về float hoặc int nếu cần
-                int transactionUtility = userScores.stream()
-                        .mapToInt(score -> Math.round(score.getUtility()))
-                        .sum();
-                total+=transactionUtility;
-                String line = String.join(" ", items) + ":" + (int)transactionUtility + ":" + String.join(" ", utilities);
-
-                writer.write(line);
+                    itemIDs.add(String.valueOf(score.getSubject().getId())+"["+Math.round(score.getUtility())+"]");
+                    long roundedUtility = Math.round(score.getUtility());
+                    itemUtilities.add(String.valueOf(roundedUtility));
+                    transactionUtilitySum += roundedUtility;
+                }
+                if (itemIDs.isEmpty()) {
+                    continue;
+                }
+                String sequenceLine = String.join(" -1 ", itemIDs) + " -1 -2 S:" + transactionUtilitySum;
+                writer.write(sequenceLine);
                 writer.newLine();
+                total += transactionUtilitySum;
             }
         }
         System.out.println("Total Utility: " + total);
     }
     //2
-    public void runEFIM(String inputPath, String outputPath, int minUtil) throws IOException {
-        boolean keepTransactions = false;// Có giữ giao dịch trong bộ nhớ hay không
-        int maxMemory = 50000; // Giới hạn bộ nhớ (tùy chỉnh)
-        boolean printVerbose = true;// In thông tin quá trình mining hay không
+    public void runEFIM() throws IOException {
+        String inputPath= valueProperties.getFileExportTransaction();
+        String outputPath= valueProperties.getFileAlgoHUSRM();
+        int maxAntecedentSize=6;
+        int maxConsequentSize=1;
+        int maximumNumberOfSequences=Integer.MAX_VALUE;
+        double minUtility = valueProperties.getMinUtility();
+        double minUtilityConfidence = 0.8;
 
-        AlgoEFIM algo = new AlgoEFIM();
-        algo.runAlgorithm(minUtil, inputPath, outputPath, keepTransactions, maxMemory, printVerbose);
-        algo.printStats();
+        AlgoHUSRM algoHUSRM = new AlgoHUSRM();
+        long startTime = System.currentTimeMillis();
+        algoHUSRM.runAlgorithm(inputPath, outputPath, minUtilityConfidence, minUtility,maxAntecedentSize,maxConsequentSize,maximumNumberOfSequences);
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        System.out.println("Thời gian chạy AlgoHUSRM: " +executionTime+ " ms");
+        List<String> rulesReadFromFile = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(outputPath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) { // Bỏ qua các dòng trống
+                    rulesReadFromFile.add(line);
+                }
+            }
+        }
+        System.out.println("Tổng số luật kết hợp hữu ích được ghi ra file và đọc được: " + rulesReadFromFile.size());
+        System.out.println("Luật đã được lưu vào: " + outputPath);
     }
+
     //3
-    public List<HUItemset> readAndSaveItemsets(String efimResultFile) throws IOException {
-        HUItemsetRepository.deleteAll();
-        List<HUItemset> itemsets = new ArrayList<>();
-        List<String> lines = Files.readAllLines(Paths.get(efimResultFile));
+    public void readAndSaveRules() throws IOException {
+        String fileAlgoHUSRM= valueProperties.getFileAlgoHUSRM();
+        ruleRepository.deleteAll();
+        List<Rule> rulesToSave = new ArrayList<>();
+        int parsedRulesCount = 0;
+        // Ví dụ: 213603,214242,214321,214389 ==> 214352,214442 #SUP: 1.0 #CONF: 1.0 #UTIL: 139.0
+        Pattern pattern = Pattern.compile(
+                "(.+) ==> (.+) #SUP: (\\d+\\.?\\d*) #CONF: (\\d+\\.?\\d*) #UTIL: (\\d+\\.?\\d*)"
+        );
 
-        for (String line : lines) {
-            String[] parts = line.split(" #UTIL:");
-            if (parts.length != 2) continue;
+        System.out.println("Bắt đầu đọc và phân tích file luật: " + fileAlgoHUSRM);
 
-            List<String> items = Arrays.stream(parts[0].trim().split(" "))
-                    .map(String::trim)
-                    .collect(Collectors.toList());
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileAlgoHUSRM))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) {
+                    continue; // Bỏ qua dòng trống
+                }
 
-            float utility = Float.parseFloat(parts[1].trim());
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()) {
+                    String antecedentItems = matcher.group(1).trim(); // Nhóm 1: Antecedent
+                    String consequentItems = matcher.group(2).trim(); // Nhóm 2: Consequent
+                    BigDecimal support = new BigDecimal(matcher.group(3)).divide(new BigDecimal(1000)); // Nhóm 3: Support
+                    BigDecimal confidence = new BigDecimal(matcher.group(4)); // Nhóm 4: Confidence
+                    BigDecimal utility = new BigDecimal(matcher.group(5)); // Nhóm 5: Utility
 
-            HUItemset itemset = new HUItemset();
-            itemset.setItems(items);
-            itemset.setUtility(utility);
-            itemsets.add(itemset);
+                    Rule rule = new Rule();
+                    rule.setAntecedentItems(antecedentItems);
+                    rule.setConsequentItems(consequentItems);
+                    rule.setSupport(support);
+                    rule.setConfidence(confidence);
+                    rule.setUtility(utility);
+
+                    rulesToSave.add(rule);
+                    parsedRulesCount++;
+                } else {
+                    System.err.println("Dòng không khớp định dạng luật và bị bỏ qua: " + line);
+                }
+            }
         }
 
-        HUItemsetRepository.saveAll(itemsets);
+        // Lưu tất cả các luật đã phân tích vào cơ sở dữ liệu
+        if (!rulesToSave.isEmpty()) {
+            ruleRepository.saveAll(rulesToSave);
+            System.out.println("Đã lưu thành công " + rulesToSave.size() + " luật vào cơ sở dữ liệu.");
+        } else {
+            System.out.println("Không tìm thấy luật nào hợp lệ để lưu.");
+        }
+        System.out.println("Tổng số dòng luật được phân tích từ file: " + parsedRulesCount);
 
-        return itemsets;
     }
 
 
@@ -187,6 +246,7 @@ public class MainService {
 //    return new PageImpl<>(pageContent, pageable, total);
 //}
     public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
+        System.out.println("hhhhhhhhhh");
         // Môn đã học và pass rồi
         Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
                 .stream()
@@ -199,12 +259,12 @@ public class MainService {
                 .map(cc -> cc.getSubject().getId())
                 .collect(Collectors.toSet());
 
-        // Lấy HUItemsets theo utility giảm dần (giả sử bạn có method này)
-        List<HUItemset> huItemsets = HUItemsetRepository.findAllByOrderByUtilityDesc();
-
-        // Gom tất cả subjectId từ HUItemsets (để load sẵn Subjects, tránh gọi từng cái)
-        Set<String> allSubjectIds = huItemsets.stream()
-                .flatMap(h -> h.getItems().stream())
+        // Lấy rule theo utility giảm dần
+        List<RuleActive> rules = ruleActiveRepository.findAllByOrderByUtilityDesc();
+        // Gom tất cả subjectId từ rules (để load sẵn Subjects, tránh gọi từng cái)
+        Set<String> allSubjectIds = rules.stream()
+                .map(RuleActive::getConsequentItems)
+                .map(String ::trim)
                 .collect(Collectors.toSet());
 
         // Load tất cả Subject 1 lần
@@ -219,20 +279,26 @@ public class MainService {
 
         Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
 
-        for (HUItemset huItemset : huItemsets) {
-            List<String> itemIds = huItemset.getItems();
-            boolean hasLearnedOne = itemIds.stream().anyMatch(learnedSubjectIds::contains);
-            if (!hasLearnedOne) continue;
-
-            for (String subjectId : itemIds) {
-                if (!learnedSubjectIds.contains(subjectId)) {
-                    Subject subject = subjectMap.get(subjectId);
+        for (RuleActive rule : rules) {
+            System.out.println(rule);
+            List<String> itemIds = Arrays.stream(rule.getAntecedentItems().split(",")) // Split the string by comma
+                    .map(String::trim) // Trim whitespace from each individual ID
+                    .collect(Collectors.toList()); // Collect them into a List<String>
+            boolean hasLearnedAllAntecedent = itemIds.stream().allMatch(learnedSubjectIds::contains);
+            System.out.println(hasLearnedAllAntecedent);
+            if (!hasLearnedAllAntecedent) continue;
+            String consequentSubjectId=rule.getConsequentItems();
+            System.out.println(consequentSubjectId);
+//            for (String subjectId : itemIds) {
+                if (!learnedSubjectIds.contains(consequentSubjectId)) {
+                    Subject subject = subjectMap.get(consequentSubjectId);
+                    System.out.println(subject);
                     if (subject == null) continue;
 
-                    if (!subjectIdsInCurriculum.contains(subjectId)) continue;
+                    if (!subjectIdsInCurriculum.contains(consequentSubjectId)) continue;
 
                     // Kiểm tra eligibility dựa trên prerequisite đã load sẵn
-                    List<Prerequisite> prerequisites = prerequisiteMap.getOrDefault(subjectId, Collections.emptyList());
+                    List<Prerequisite> prerequisites = prerequisiteMap.getOrDefault(consequentSubjectId, Collections.emptyList());
                     boolean eligible = prerequisites.stream()
                             .allMatch(pr -> learnedSubjectIds.contains(pr.getPrerequisiteSubject().getId()));
 
@@ -243,13 +309,13 @@ public class MainService {
 
                         SubjectRecommendDTO dto = new SubjectRecommendDTO();
                         dto.setSubject(subject);
-                        dto.setUtility(huItemset.getUtility());
+                        dto.setUtility(rule.getUtility().floatValue());
                         dto.setPreSubjects(preSubjects);
                         suggestions.add(dto);
                     }
                 }
             }
-        }
+
 
         // Phân trang thủ công
         List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
@@ -289,6 +355,15 @@ public class MainService {
         }
         System.out.println(subjectGroupRequirementDTOList);
         return subjectGroupRequirementDTOList;
+    }
+    public void transFromRuleToRuleActive(){
+        ruleActiveRepository.deleteAll();
+        List<Rule> rules=ruleRepository.findAll();
+        List<RuleActive> ruleActives=new ArrayList<>();
+        for(Rule rule: rules){
+            ruleActives.add(new RuleActive(rule));
+        }
+        ruleActiveRepository.saveAll(ruleActives);
     }
 
 
