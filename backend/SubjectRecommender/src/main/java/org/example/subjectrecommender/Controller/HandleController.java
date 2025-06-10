@@ -34,16 +34,9 @@ public class HandleController {
 
     @PostMapping("/algo")
     public void algo() throws IOException {
-        String fileExport=valueProperties.getFileExport();
-        String efimfile=valueProperties.getFileEFIM();
-        int minUtility= valueProperties.getMinUtility();
-        mainService.exportTransactionFile(fileExport);
-        System.out.println("Hoàn thành exportFile");
-        mainService.runEFIM(fileExport,efimfile,minUtility);
-        System.out.println("Hoàn thành chạy EFIM");
-        mainService.readAndSaveItemsets(efimfile);
-        System.out.println("Hoàn thành lưu HUitemset vào cơ sở dữ liệu");
-
+        mainService.exportTransactionFile();
+        mainService.runEFIM();
+        mainService.readAndSaveRules();
     }
     @GetMapping("/recommend")
     public ResponseEntity<?> recomendSubject(@RequestParam int semester, @RequestParam String userId, @RequestParam(defaultValue = "0") int page,
