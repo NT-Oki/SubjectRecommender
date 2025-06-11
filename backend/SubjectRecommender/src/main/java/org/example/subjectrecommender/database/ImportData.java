@@ -5,17 +5,22 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.subjectrecommender.Model.*;
 import org.example.subjectrecommender.Service.*;
+import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.component.ImportProgressTracker;
+import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.ErrorRow;
 import org.example.subjectrecommender.dto.ScoreAddDTO;
 import org.example.subjectrecommender.util.ConvertToUnicode;
 import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,8 @@ public class ImportData {
     ScoreService scoreService;
     @Autowired
     private ImportProgressTracker tracker;
+    @Autowired
+    ValueProperties valueProperties;
 
     public Sheet getSheet(InputStream inputStream, String sheetName) throws IOException {
        // inputStream=new FileInputStream(new File("D:\\3.study\\TIỂU LUẬN\\data.xlsx"));
@@ -303,18 +310,50 @@ public class ImportData {
         list.add(errorRow);
 
     }
-    public List<ErrorRow> importScore(File file, String fileId) throws IOException {
+    public void addErroRowHeader(List<ErrorRow> list,int rowIndex,String reasonErro){
+        ErrorRow errorRow=new ErrorRow();
+        errorRow.setRowNumber(rowIndex);
+        List<String> rowData = new ArrayList<>();
+        rowData.add("không có dữ liệu");
+        errorRow.setRowData(rowData);
+        errorRow.setErrorReason(reasonErro);
+        list.add(errorRow);
+
+    }
+    @Async
+    public void importScore(File file, String fileId) throws IOException {
         List<ErrorRow> errorRows = new ArrayList<>();
         try (InputStream is = new FileInputStream(file);
              Workbook workbook = new XSSFWorkbook(is)
         ) {
             Sheet sheet = workbook.getSheet("Diem");
+            if (sheet == null) {
+                tracker.setProgress(fileId, -1); // Báo lỗi
+                addErroRowHeader(errorRows,0,"Không tìm thấy sheet Diem");
+                tracker.setErrorRows(fileId, errorRows); // Lưu lỗi vào tracker
+                return;
+            }
             List<ScoreAddDTO> scores=new ArrayList<>();
             Row headerRow = sheet.getRow(0);
+            if (headerRow == null) {
+                tracker.setProgress(fileId, -1);
+                addErroRowHeader(errorRows,0,"File Excel không có hàng tiêu đề.");
+                tracker.setErrorRows(fileId, errorRows);
+                return;
+            }
             Map<String, Integer> columnIndex = new HashMap<>();
             // Lấy vị trí cột theo tên
             for (Cell cell : headerRow) {
                 columnIndex.put(cell.getStringCellValue().trim(), cell.getColumnIndex());
+            }
+            String[] requiredColumns = {"Mã Sv", "Học kỳ", "Mã môn học", "Điểm"};
+            boolean isAllHeader = Arrays.stream(requiredColumns)
+                    .allMatch(col -> columnIndex.containsKey(col));
+            if(!isAllHeader){
+                tracker.setProgress(fileId, -1);
+                addErroRowHeader(errorRows,0,"Hàng tiêu đề thiếu cột");
+                tracker.setErrorRows(fileId, errorRows);
+                return;
             }
             int totalRows = sheet.getLastRowNum();
             for (int i = 1; i <= totalRows; i++) {
@@ -383,20 +422,40 @@ public class ImportData {
                 score.setScore(diem);
                 scores.add(score);
 
-                if (i % 50 == 0 || i == totalRows) {
-                    int progress = (i * 100) / totalRows;
-                    tracker.setProgress(fileId, progress);
-                }
+                int currentProgress = (int) (((double) i /totalRows ) * 90);
+                tracker.setProgress(fileId, Math.min(currentProgress, 99));
 
             }
-            for(ScoreAddDTO dto:scores){
-                scoreService.addScore(dto);
+            int scoresSavedCount = 0;
+            for (ScoreAddDTO dto : scores) {
+                try {
+                    scoreService.addScore(dto);
+                    scoresSavedCount++;
+                    // Cập nhật tiến trình cho giai đoạn lưu DB (ví dụ: 90-99%)
+                    int saveProgress = 90 + (int) (((double) scoresSavedCount / scores.size()) * 9);
+                    tracker.setProgress(fileId, Math.min(saveProgress, 99));
+                } catch (Exception e) {
+                    // Xử lý lỗi khi lưu từng bản ghi vào DB
+                    System.err.println("Lỗi khi lưu điểm cho SV " + dto.getUserId() + ": " + e.getMessage());
+                    // Bạn có thể thêm lỗi này vào errorRows nếu muốn hiển thị chi tiết lỗi DB
+                    // errorRows.add(new ErrorRow(dto.getUserId(), "Lỗi DB: " + e.getMessage()));
+                }
             }
-        }catch (Exception e){
+            tracker.setProgress(fileId, 100); // Hoàn tất tiến trình khi mọi thứ đã xong
+            tracker.setErrorRows(fileId, errorRows);
+        }catch (IOException e){
             e.printStackTrace();
+            tracker.setProgress(fileId, -1); // Báo lỗi IO
+            addErroRowHeader(errorRows,0,"Lỗi đọc file: " + e.getMessage());
+            tracker.setErrorRows(fileId, errorRows);
+        } catch (Exception e) {
+            e.printStackTrace();
+            tracker.setProgress(fileId, -1); // Báo lỗi chung
+            addErroRowHeader(errorRows,0,"Lỗi không xác định trong quá trình import: " + e.getMessage());
+            tracker.setErrorRows(fileId, errorRows);
         }
-        return errorRows;
     }
+
     public void importUtility(){
         scoreService.updateAllUtility();
     }
@@ -419,42 +478,58 @@ public class ImportData {
         userService.saveAll(userList);
         System.out.println("update role thành công");
     }
-    public void exportErrorRowsToExcel(List<ErrorRow> errorRows, String outputPath) throws IOException {
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("ErrorRows");
+    public ByteArrayInputStream  exportErrorRowsToExcel(List<ErrorRow> errorRows) throws IOException {
+        String outputPath = valueProperties.getPathFileExportScoreErro();
+        try(Workbook workbook = new XSSFWorkbook();
+            ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("ErrorRows");
 
-        // Tạo header
-        Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("Row Number");
-        headerRow.createCell(1).setCellValue("Row Data");
-        headerRow.createCell(2).setCellValue("Error Reason");
+            // Tạo header
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Row Number");
+            headerRow.createCell(1).setCellValue("Row Data");
+            headerRow.createCell(2).setCellValue("Error Reason");
 
-        // Điền dữ liệu từng dòng
-        int rowNum = 1;
-        for (ErrorRow errorRow : errorRows) {
-            Row row = sheet.createRow(rowNum++);
+            // Điền dữ liệu từng dòng
+            int rowNum = 1;
+            for (ErrorRow errorRow : errorRows) {
+                Row row = sheet.createRow(rowNum++);
 
-            row.createCell(0).setCellValue(errorRow.getRowNumber());
+                row.createCell(0).setCellValue(errorRow.getRowNumber());
 
-            // Nối danh sách rowData thành chuỗi, ví dụ: "cell1, cell2, cell3"
-            String rowDataStr = errorRow.getRowData().stream()
-                    .collect(Collectors.joining(", "));
-            row.createCell(1).setCellValue(rowDataStr);
+                // Nối danh sách rowData thành chuỗi, ví dụ: "cell1, cell2, cell3"
+                String rowDataStr = errorRow.getRowData().stream()
+                        .collect(Collectors.joining(", "));
+                row.createCell(1).setCellValue(rowDataStr);
 
-            row.createCell(2).setCellValue(errorRow.getErrorReason());
+                row.createCell(2).setCellValue(errorRow.getErrorReason());
+            }
+
+            // Tự động điều chỉnh độ rộng các cột
+            for (int i = 0; i < 3; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            workbook.write(out);
+
+            workbook.close();
+            return new ByteArrayInputStream(out.toByteArray());
         }
 
-        // Tự động điều chỉnh độ rộng các cột
-        for (int i = 0; i < 3; i++) {
-            sheet.autoSizeColumn(i);
-        }
+    }
+    public void cleanupImportData(String fileId, FileStorageComponent fileStorage) {
+        // Xóa tiến trình và lỗi từ tracker
+        tracker.removeProgress(fileId);
 
-        // Ghi file
-        try (FileOutputStream fileOut = new FileOutputStream(outputPath)) {
-            workbook.write(fileOut);
+        // Xóa file tạm thời nếu còn tồn tại
+        Path tempFile = fileStorage.remove(fileId); // Xóa khỏi map và lấy ra Path
+        if (tempFile != null && Files.exists(tempFile)) {
+            try {
+                Files.delete(tempFile);
+                System.out.println("Đã xóa file tạm thời: " + tempFile);
+            } catch (IOException e) {
+                System.err.println("Không thể xóa file tạm thời: " + tempFile + ". Lỗi: " + e.getMessage());
+            }
         }
-
-        workbook.close();
     }
 
 

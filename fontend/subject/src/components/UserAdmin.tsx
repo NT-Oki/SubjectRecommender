@@ -1,14 +1,15 @@
-import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, FormHelperText, InputLabel, Select, MenuItem } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, FormHelperText, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
 import { GiTwirlyFlower, } from "react-icons/gi";
 import axios from 'axios';
-import { Fragment, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import {  toast } from 'react-toastify';
 const StudentAdmin = () => {
     interface UserDTO {
         id: string;
@@ -44,13 +45,11 @@ const StudentAdmin = () => {
     const [isLastNameAddErro, setIsLastNameAddErro] = useState<boolean>(true);
     const [isNameAddErro, setIsNameAddErro] = useState<boolean>(true);
     const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(false);
-    // const [dataAdd, setDataAdd] = useState<ScoreAdd>({
-    //   userId: '',
-    //   subjectId: '',
-    //   semester: 0,
-    //   score: 0,
-    //   year: 0,
-    // });
+       const [isImport, setIsImport] = useState<boolean>(false);
+       const [progress, setProgress] = useState(0);
+       // const [errorRows, setErrorRows] = useState([]);
+       const [uploading, setUploading] = useState(false);
+       const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const fetchUser = async () => {
 
         // const userId = sessionStorage.getItem("userId");
@@ -72,6 +71,7 @@ const StudentAdmin = () => {
             console.log(response.data)
             setData(response.data.users);
             setTotal(response.data.total)
+            
         } catch (error) {
             console.error("Lỗi khi lấy thông tin điểm user:", error);
         } finally {
@@ -189,6 +189,13 @@ const StudentAdmin = () => {
         }
     }
 
+    function handleFileChange(e: ChangeEvent<HTMLInputElement>): void {
+        throw new Error("Function not implemented.")
+    }
+    const handleImport=()=>{
+
+    }
+
     return (
         // body--------------------------------------
         <>
@@ -244,10 +251,19 @@ const StudentAdmin = () => {
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)} />
                 <Button variant="contained"
-                    onClick={handleSearchClick}
+                    onClick={()=>{
+                        handleSearchClick();
+                         toast.success("okeeeeeeeeeee");
+                    }}
                 >Tìm</Button>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
-                <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => setIsAdd(true)}>Thêm</Button>
+                <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => {
+                    setIsAdd(true);
+                   
+                }}>Thêm</Button>
+                 <Button variant="contained" color="success" onClick={() => {
+                    setIsImport(true);
+                }}>Import</Button>
             </Box>
 
             <Box
@@ -715,9 +731,69 @@ const StudentAdmin = () => {
                                 </Box>
                             </Box>
                         </Box>
+                        
                     </>
                 )
             }
+            {/* ////////////// */}
+            <Dialog open={isImport} onClose={() => setIsImport(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "#e1f7d5",
+                            width: "400px"
+                        }
+                    }
+                }}
+            >
+                <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Thêm User từ file Excel</DialogTitle>
+                <DialogContent>
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                        <InputLabel shrink htmlFor="import-file-input">
+                            Chọn file Excel để thêm dữ liệu
+                        </InputLabel>
+                        <input
+                            id="import-file-input"
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={(e) => handleFileChange(e)}
+                            style={{
+                                marginTop: "10px",
+                                border: "1px solid #ccc",
+                                padding: "6px",
+                                borderRadius: "4px",
+                                backgroundColor: "#e1f7d5",
+                            }}
+                        />
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsImport(false)}>Hủy</Button>
+                    <Button variant="contained" onClick={handleImport} >Lưu</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={uploading} onClose={() => setUploading(false)}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            bgcolor: "#e1f7d5",
+                            width: "400px"
+                        }
+                    }
+                }}
+            >
+                <DialogTitle style={{ fontFamily: "sans-serif" }}>Đang nhập dữ liệu điểm{progress} </DialogTitle>
+                <DialogContent>
+                    {/* <Label>Đang xử lí: {progress} %</Label> */}
+                    <progress value={progress} max={100}/>
+                        
+                    {/* <LinearProgress variant="determinate" value={progress} /> */}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUploading(false)}>Hủy</Button>
+                </DialogActions>
+            </Dialog>
+             
         </>
 
         //    end Body---------------------------------

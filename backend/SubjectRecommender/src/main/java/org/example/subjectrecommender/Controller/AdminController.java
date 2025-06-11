@@ -2,6 +2,7 @@ package org.example.subjectrecommender.Controller;
 
 import org.example.subjectrecommender.Model.CurriculumCourse;
 import org.example.subjectrecommender.Service.AdminService;
+import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.component.ImportProgressTracker;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,7 +38,8 @@ public class AdminController {
     AdminService adminService;
     @Autowired
     ImportProgressTracker importProgressTracker ;
-    private final Map<String, Path> fileStorage = new ConcurrentHashMap<>();
+    @Autowired
+    private FileStorageComponent fileStorageComponent;
 
     @GetMapping("/scores")
     public ResponseEntity<?> scoreList(  @RequestParam(defaultValue = "0") int page,
@@ -197,62 +200,76 @@ public class AdminController {
     @PostMapping("/upload-temp")
     public ResponseEntity<?> uploadTemp(@RequestParam MultipartFile file) throws IOException {
         String fileId = UUID.randomUUID().toString().substring(0,10);
-        Path tempFile = Files.createTempFile(fileId, ".xlsx");
-        file.transferTo(tempFile.toFile());
-        fileStorage.put(fileId, tempFile);
+        Path tempFile = fileStorageComponent.createTempFile(fileId, ".xlsx");
+        file.transferTo(tempFile.toFile());//lưu file
+        fileStorageComponent.put(fileId, tempFile);// Lưu đường dẫn vào map để theo dõi
+        importProgressTracker.setProgress(fileId, 0);
         Map<String,Object> result = new HashMap<>();
         result.put("fileId",fileId);
-        result.put("filePath",tempFile.toAbsolutePath());
+        result.put("filePath",tempFile.toAbsolutePath().toString());
         return ResponseEntity.ok(result);
     }
-
     @PostMapping("/scores/import")
     public ResponseEntity<?> importScore(
-            @RequestParam("fileId") String fileId,
-            @RequestParam("path") String filePath) throws IOException {
-
+            @RequestBody ImportRequestDto fileId
+           ) throws IOException {
+        System.out.println("fileId:"+fileId);
 //        Path path = Paths.get(filePath);
-        Path path = fileStorage.get(fileId);
+        Path path = fileStorageComponent.get(fileId.getFileId());
+        System.out.println("path:"+path);
         if (path == null || !Files.exists(path)) {
+
+            importProgressTracker.setProgress(fileId.getFileId(), -1);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("File không tồn tại hoặc đã hết hạn");
         }
-        List<ErrorRow> erroRows = adminService.importScore(path.toFile(), fileId);
-        adminService.exportErrorRowsToExcel(erroRows,"./data/erro.xlsx");
-        importProgressTracker.setProgress(fileId, 100); // đảm bảo hoàn tất
+         adminService.importScore(path.toFile(), fileId.getFileId());
+
+//        adminService.exportErrorRowsToExcel(erroRows,"./data/erro.xlsx");
+//        importProgressTracker.setProgress(fileId, 100); // đảm bảo hoàn tất
         Map<String,Object> result = new HashMap<>();
-        result.put("erroRows",erroRows);
+        result.put("fileId", fileId);
+//        result.put("erroRows",erroRows);
+//        return ResponseEntity.ok(result);
         return ResponseEntity.ok(result);
     }
     @GetMapping("/progress")
     public ResponseEntity<Integer> getProgress(@RequestParam String fileId) {
         return ResponseEntity.ok(importProgressTracker.getProgress(fileId));
     }
-    @PostMapping("/scores/import-async")
-    public ResponseEntity<?> importScoreAsync(@RequestParam("fileId") String fileId) {
-        Path path = fileStorage.get(fileId);
-        if (path == null || !Files.exists(path)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("File không tồn tại hoặc đã hết hạn");
-        }
-        // Chạy import bất đồng bộ trong thread mới
-        new Thread(() -> {
-            try {
-                List<ErrorRow> errorRows = adminService.importScore(path.toFile(), fileId);
-                adminService.exportErrorRowsToExcel(errorRows,"./data/erro.xlsx");
-                importProgressTracker.setProgress(fileId, 100); // đánh dấu hoàn tất
-            } catch (Exception e) {
-                importProgressTracker.setProgress(fileId, -1); // lỗi
-                e.printStackTrace();
-            }
-        }).start();
-
-        // Trả về ngay fileId để frontend gọi polling lấy progress
-        Map<String,Object> result = new HashMap<>();
-        result.put("fileId", fileId);
+    @GetMapping("/scores/import/errors")
+    public ResponseEntity<Map<String, Object>> getImportErrors(@RequestParam String fileId) throws IOException {
+        Map<String, Object> result = new HashMap<>();
+        List<ErrorRow> erroRows = importProgressTracker.getErrorRows(fileId);
+        result.put("erroRows", erroRows);
+        adminService.cleanupImportData(fileId, fileStorageComponent);
         return ResponseEntity.ok(result);
+
     }
+    @PostMapping("/scores/export-erros")
+    public ResponseEntity<?> exportErrors(@RequestBody List<ErrorRow> data) throws IOException {
+        try {
+            // Log để kiểm tra dữ liệu nhận được từ frontend
+            System.out.println("Received export request for " + data.size() + " error rows.");
 
+            // Gọi service để tạo luồng Excel
+            ByteArrayInputStream excelStream = adminService.exportErrorRowsToExcel(data);
 
+            // Chuẩn bị headers cho việc tải xuống file
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=scores_erros.xlsx"); // Tên file khi tải xuống
+            headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); // MIME type cho .xlsx
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(new InputStreamResource(excelStream)); // Gửi luồng dữ liệu
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Export lỗi trong khi import score . Lỗi: " + e.getMessage());
+        }
+    }
 
 }

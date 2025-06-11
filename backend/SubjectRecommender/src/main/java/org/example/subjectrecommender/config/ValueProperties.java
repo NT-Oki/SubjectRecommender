@@ -18,5 +18,6 @@ public class ValueProperties {
    private String secret_key;
    private int time_token;
    private String email;
+   private String pathFileExportScoreErro;
 
 }

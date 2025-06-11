@@ -9,10 +9,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.io.IOException;
 
-
+@EnableAsync
 @SpringBootApplication
 @EntityScan(basePackages = "org.example.subjectrecommender.Model")
 public class SubjectRecommenderApplication {
@@ -26,9 +27,9 @@ public class SubjectRecommenderApplication {
 //        importData.updateRoleForUser(2);//student
         MainService mainService= context.getBean(MainService.class);
 //        mainService.exportTransactionFile();
-            mainService.runEFIM();
-        mainService.readAndSaveRules();
-        mainService.transFromRuleToRuleActive();
+//            mainService.runEFIM();
+//        mainService.readAndSaveRules();
+//        mainService.transFromRuleToRuleActive();
     }
 
 }
