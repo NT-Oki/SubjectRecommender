@@ -24,11 +24,11 @@ public class SubjectRecommenderApplication {
 //        ImportData importData= context.getBean(ImportData.class);
 //        importData.updateCurriculumVersionForUser("7480201_2020");
 //        importData.updateRoleForUser(2);//student
-//        MainService mainService= context.getBean(MainService.class);
-//        mainService.exportTransactionFile("./data/exportFile.txt",true);
-//            mainService.runEFIM();
-//        mainService.readAndSaveRules();
-//        mainService.transFromRuleToRuleActive();
+        MainService mainService= context.getBean(MainService.class);
+//        mainService.exportTransactionFile();
+            mainService.runEFIM();
+        mainService.readAndSaveRules();
+        mainService.transFromRuleToRuleActive();
     }
 
 }
