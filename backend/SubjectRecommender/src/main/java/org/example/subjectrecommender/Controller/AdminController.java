@@ -1,6 +1,5 @@
 package org.example.subjectrecommender.Controller;
 
-import org.example.subjectrecommender.Model.CurriculumCourse;
 import org.example.subjectrecommender.Service.AdminService;
 import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.component.ImportProgressTracker;

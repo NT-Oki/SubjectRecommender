@@ -19,5 +19,6 @@ public class ValueProperties {
    private int time_token;
    private String email;
    private String pathFileExportScoreErro;
+   private int totalTransaction;
 
 }

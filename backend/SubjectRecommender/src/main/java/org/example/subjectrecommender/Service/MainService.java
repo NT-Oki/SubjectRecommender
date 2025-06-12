@@ -6,15 +6,11 @@ import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.SubjectGroupRequirementDTO;
 import org.example.subjectrecommender.dto.SubjectRecommendDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -27,8 +23,6 @@ public class MainService {
     ScoreRepository scoreRepository;
     @Autowired
     SubjectRepository subjectRepository;
-    @Autowired
-    HUItemsetRepository HUItemsetRepository;
     @Autowired
     PrerequisiteRepository prerequisiteRepository;
     @Autowired
@@ -47,204 +41,17 @@ public class MainService {
     RuleRepository ruleRepository;
     @Autowired
     RuleActiveRepository ruleActiveRepository;
-
-    //1 1sv1 transaction
-//    public void exportTransactionFile() throws IOException {
-//        String outputPath= valueProperties.getFileExportTransaction();
-//        boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
-//        List<Score> scores = scoreRepository.findAll();
-//        Map<String, List<Score>> groupedByUser = scores.stream()
-//                .collect(Collectors.groupingBy(score -> score.getUser().getId()));
-//        int total=0;
-//        int totalLine=0;
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
-//            for (Map.Entry<String, List<Score>> entry : groupedByUser.entrySet()) {
-//                List<Score> userScores = entry.getValue();
-//                userScores.sort(Comparator
-//                        .comparing(Score::getYear)
-//                        .thenComparing(Score::getSemester));
-//                List<String> itemIDs = new ArrayList<>();
-//                List<String> itemUtilities = new ArrayList<>();
-//                long transactionUtilitySum = 0;
-//                for (Score score : userScores) {
-//                    if (filterPassedSubjects && score.getPassed() != 1) {
-//                        continue; // Bỏ qua nếu đang lọc và môn này chưa pass
-//                    }
-//
-//                    itemIDs.add(String.valueOf(score.getSubject().getId())+"["+Math.round(score.getUtility())+"]");
-//                    long roundedUtility = Math.round(score.getUtility());
-//                    itemUtilities.add(String.valueOf(roundedUtility));
-//                    transactionUtilitySum += roundedUtility;
-//                }
-//                if (itemIDs.isEmpty()) {
-//                    continue;
-//                }
-//                String sequenceLine = String.join(" -1 ", itemIDs) + " -1 -2 S:" + transactionUtilitySum;
-//                writer.write(sequenceLine);
-//                writer.newLine();
-//                total += transactionUtilitySum;
-//                totalLine++;
-//            }
-//        }
-//        System.out.println("Total Utility: " + total);
-//        System.out.println("Total Line: " + totalLine);
-//    }
-    //1 sv 2 transaction theo học kì
-//    public void exportTransactionFile() throws IOException {
-//        String outputPath = valueProperties.getFileExportTransaction();
-//        boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
-//        List<Score> scores = scoreRepository.findAll();
-//
-//        // Nhóm điểm theo User ID, sau đó chỉ nhóm theo Học kỳ (bỏ qua Năm)
-//        Map<String, Map<Integer, List<Score>>> groupedByUserAndSemester = scores.stream()
-//                .collect(Collectors.groupingBy(score -> score.getUser().getId(), // Nhóm theo User ID
-//                        Collectors.groupingBy(Score::getSemester))); // Tiếp theo nhóm theo Học kỳ
-//
-//        int total = 0;
-//        int totalLine = 0; // Khởi tạo totalLine ở đây
-//
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
-//            // Duyệt qua từng sinh viên
-//            for (Map.Entry<String, Map<Integer, List<Score>>> userEntry : groupedByUserAndSemester.entrySet()) {
-//                // Duyệt qua từng học kỳ của sinh viên đó (ví dụ: Học kỳ 1, Học kỳ 2, v.v. - không phân biệt năm)
-//                for (Map.Entry<Integer, List<Score>> semesterEntry : userEntry.getValue().entrySet()) {
-//                    List<Score> semesterScores = semesterEntry.getValue(); // Lấy danh sách điểm của một học kỳ cụ thể (có thể từ nhiều năm)
-//
-//                    // Sắp xếp điểm trong học kỳ để đảm bảo thứ tự nhất quán trong mỗi giao dịch
-//                    // Nên sắp xếp theo năm trước, sau đó là ID môn học, để giữ thứ tự nếu có điểm cùng học kỳ ở các năm khác nhau.
-//                    semesterScores.sort(Comparator
-//                            .comparing(Score::getYear) // Sắp xếp theo năm
-//                            .thenComparing(score -> score.getSubject().getId())); // Sau đó theo ID môn học
-//
-//                    List<String> itemIDs = new ArrayList<>();
-//                    long transactionUtilitySum = 0;
-//
-//                    // Xử lý từng điểm trong học kỳ đó
-//                    for (Score score : semesterScores) {
-//                        if (filterPassedSubjects && score.getPassed() != 1) {
-//                            continue; // Bỏ qua nếu đang lọc và môn này chưa đạt
-//                        }
-//
-//                        // Bạn có thể cân nhắc thêm năm vào item ID nếu muốn phân biệt
-//                        // Ví dụ: itemIDs.add(String.valueOf(score.getSubject().getId()) + "_" + score.getYear() + "[" + Math.round(score.getUtility()) + "]");
-//                        itemIDs.add(String.valueOf(score.getSubject().getId()) + "[" + Math.round(score.getUtility()) + "]");
-//                        transactionUtilitySum += Math.round(score.getUtility());
-//                    }
-//
-//                    if (itemIDs.isEmpty()) {
-//                        continue; // Bỏ qua nếu không có môn nào trong học kỳ này sau khi lọc
-//                    }
-//
-//                    // Mỗi dòng đại diện cho điểm của MỘT sinh viên trong MỘT loại học kỳ (ví dụ: tất cả điểm HK1 của SV đó qua các năm)
-//                    String sequenceLine = String.join(" -1 ", itemIDs) + " -1 -2 S:" + transactionUtilitySum;
-//                    writer.write(sequenceLine);
-//                    writer.newLine();
-//                    total += transactionUtilitySum;
-//                    totalLine++; // Tăng totalLine lên sau khi ghi mỗi dòng giao dịch
-//                }
-//            }
-//        }
-//        System.out.println("Total Utility: " + total);
-//        System.out.println("Total Line: " + totalLine);
-//    }
-//    public void exportTransactionFile() throws IOException {
-//        String outputPath = valueProperties.getFileExportTransaction();
-//        boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
-//        List<Score> allScores = scoreRepository.findAll();
-//
-//        // Bước 1: Tính tổng 'score' của từng sinh viên trong mỗi học kỳ của mỗi năm học
-//        // Khóa của map này là chuỗi "userId_year_semester" và giá trị là tổng điểm float
-//        Map<String, Double> tempTotalScoreBySemesterContext = allScores.stream()
-//                .collect(Collectors.groupingBy(
-//                        score -> String.valueOf(score.getUser().getId()) + "_" + score.getYear() + "_" + score.getSemester(),
-//                        Collectors.summingDouble(Score::getScore) // Chỉ tính tổng là Double
-//                ));
-//        // Tạo Map cuối cùng với giá trị là Float
-//        Map<String, Float> totalScoreBySemesterContext = tempTotalScoreBySemesterContext.entrySet().stream()
-//                .collect(Collectors.toMap(
-//                        Map.Entry::getKey,
-//                        entry -> entry.getValue().floatValue() // Ép kiểu Double sang Float tại đây
-//                ));
-//
-//        // Bước 2: Nhóm điểm chính theo User ID, sau đó theo Năm và Học kỳ
-//        // Mỗi nhóm (User ID, Year, Semester) sẽ tạo thành một transaction riêng biệt
-//        Map<String, Map<Integer, Map<Integer, List<Score>>>> groupedByUserAndSemester = allScores.stream()
-//                .collect(Collectors.groupingBy(score -> score.getUser().getId(), // Group theo Long User ID
-//                        Collectors.groupingBy(Score::getYear,
-//                                Collectors.groupingBy(Score::getSemester))));
-//
-//        long totalUtilitySumOverall = 0; // Tổng utility của tất cả các giao dịch
-//        int totalLine = 0; // Tổng số dòng (giao dịch) được xuất
-//
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
-//            // Duyệt qua từng sinh viên
-//            for (Map.Entry<String, Map<Integer, Map<Integer, List<Score>>>> userEntry : groupedByUserAndSemester.entrySet()) {
-//                // Duyệt qua từng năm học của sinh viên đó
-//                for (Map.Entry<Integer, Map<Integer, List<Score>>> yearEntry : userEntry.getValue().entrySet()) {
-//                    // Duyệt qua từng học kỳ trong năm học đó
-//                    for (Map.Entry<Integer, List<Score>> semesterEntry : yearEntry.getValue().entrySet()) {
-//                        List<Score> semesterScores = semesterEntry.getValue();
-//
-//                        // Sắp xếp điểm trong học kỳ theo Subject ID để đảm bảo thứ tự nhất quán
-//                        semesterScores.sort(Comparator.comparing(score -> score.getSubject().getId()));
-//
-//                        List<String> itemIDs = new ArrayList<>();
-//                        long transactionUtilitySum = 0; // Tổng utility cho giao dịch hiện tại
-//
-//                        // Lấy tổng score của ngữ cảnh học kỳ-năm hiện tại từ map đã tính ở Bước 1
-//                        String currentContextKey = userEntry.getKey() + "_" + yearEntry.getKey() + "_" + semesterEntry.getKey();
-//                        Float totalScoreInCurrentContext = totalScoreBySemesterContext.getOrDefault(currentContextKey, 0.0f);
-//
-//                        for (Score score : semesterScores) {
-//                            if (filterPassedSubjects && score.getPassed() != 1) {
-//                                continue; // Bỏ qua nếu đang lọc và môn này chưa pass
-//                            }
-//
-//                            // Tính utility mới: score của môn đó / tổng score của học kỳ-năm
-//                            double calculatedUtility = 0;
-//                            if (totalScoreInCurrentContext > 0) { // Tránh chia cho 0
-//                                calculatedUtility = score.getScore() / totalScoreInCurrentContext;
-//                            }
-//
-//                            // Làm tròn utility và nhân hệ số để có giá trị nguyên
-//                            // Ví dụ: nhân với 1000 để giữ độ chính xác của 3 chữ số thập phân
-//                            long roundedUtility = Math.round(calculatedUtility * 1000);
-//
-//                            itemIDs.add(String.valueOf(score.getSubject().getId()) + "[" + roundedUtility + "]");
-//                            transactionUtilitySum += roundedUtility;
-//                        }
-//
-//                        if (itemIDs.isEmpty()) {
-//                            continue; // Bỏ qua nếu không có môn nào trong học kỳ này sau khi lọc
-//                        }
-//
-//                        // Ghi dòng giao dịch vào tệp
-//                        String sequenceLine = String.join(" -1 ", itemIDs) + " -1 -2 S:" + transactionUtilitySum;
-//                        writer.write(sequenceLine);
-//                        writer.newLine();
-//
-//                        totalUtilitySumOverall += transactionUtilitySum; // Cộng dồn tổng utility chung
-//                        totalLine++; // Đếm số dòng giao dịch được ghi ra
-//                    }
-//                }
-//            }
-//        }
-//        System.out.println("Total Utility (Overall): " + totalUtilitySumOverall);
-//        System.out.println("Total Lines Exported: " + totalLine);
-//    }
     public void exportTransactionFile() throws IOException {
         String outputPath = valueProperties.getFileExportTransaction();
         boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
         List<Score> allScores = scoreRepository.findAll();
-
-        // Bước 1: Tính tổng 'score' của từng sinh viên trong mỗi học kỳ của mỗi năm học
-        // Map này dùng để tính toán utility tương đối cho từng môn học
+        // Bước 1: Tính tổng 'score' của từng sinh viên trong mỗi học kỳ của mỗi năm học [mssv_2021_1]
         Map<String, Double> tempTotalScoreBySemesterContext = allScores.stream()
                 .collect(Collectors.groupingBy(
-                        score -> String.valueOf(score.getUser().getId()) + "_" + score.getYear() + "_" + score.getSemester(),
+                        score -> score.getUser().getId() + "_" + score.getYear() + "_" + score.getSemester(),
                         Collectors.summingDouble(Score::getScore)
                 ));
-
+        // tính toán tổng điếm của từng sinh viên trong 1 hki  -> [mssv_2021_1, score ]
         Map<String, Float> totalScoreBySemesterContext = tempTotalScoreBySemesterContext.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -252,7 +59,7 @@ public class MainService {
                 ));
 
         // Bước 2: Nhóm tất cả các điểm theo User ID
-        // Mỗi List<Score> sẽ chứa toàn bộ lịch sử học tập của một sinh viên
+        // Mỗi List<Score> sẽ chứa toàn bộ lịch sử học tập của một sinh viên [mssv,score[]]
         Map<String, List<Score>> groupedByUser = allScores.stream()
                 .collect(Collectors.groupingBy(score -> score.getUser().getId()));
 
@@ -309,13 +116,13 @@ public class MainService {
 
                     for (Score score : semesterScores) {
                         if (filterPassedSubjects && score.getPassed() != 1) {
-                            continue; // Bỏ qua nếu đang lọc và môn này chưa pass
+                            continue; // Bỏ qua nếu đang kích hoạt lọc  với môn chưa pass( pass:lấy, chưa pass: bỏ qua)
                         }
 
-                        // Tính utility cho môn học: điểm của môn đó / tổng điểm của học kỳ/năm
+                        // Tính utility cho môn học: điểm của môn đó / tổng điểm của học kỳ/năm rồi nhân số tín chỉ=utility/tổng điểm
                         double calculatedUtility = 0;
                         if (totalScoreInCurrentContext > 0) {
-                            calculatedUtility = score.getScore() / totalScoreInCurrentContext;
+                            calculatedUtility = score.getUtility() / totalScoreInCurrentContext;
                         }
 
                         // Làm tròn utility và nhân hệ số để có giá trị nguyên
@@ -347,6 +154,7 @@ public class MainService {
                 }
             }
         }
+        valueProperties.setTotalTransaction(totalLine);
         System.out.println("Total Utility (Overall): " + totalUtilitySumOverall);
         System.out.println("Total Lines Exported: " + totalLine);
     }
@@ -403,9 +211,9 @@ public class MainService {
                 if (matcher.matches()) {
                     String antecedentItems = matcher.group(1).trim(); // Nhóm 1: Antecedent
                     String consequentItems = matcher.group(2).trim(); // Nhóm 2: Consequent
-                    BigDecimal support = new BigDecimal(matcher.group(3)).divide(new BigDecimal(1000)); // Nhóm 3: Support
+                    BigDecimal support = new BigDecimal(matcher.group(3)).divide(new BigDecimal(valueProperties.getTotalTransaction()),8, RoundingMode.HALF_UP).multiply(new BigDecimal(100)); // Nhóm 3: Support
                     BigDecimal confidence = new BigDecimal(matcher.group(4)); // Nhóm 4: Confidence
-                    BigDecimal utility = new BigDecimal(matcher.group(5)); // Nhóm 5: Utility
+                    BigDecimal utility = new BigDecimal(matcher.group(5)).divide(new BigDecimal(1000)); // Nhóm 5: Utility
 
                     Rule rule = new Rule();
                     rule.setAntecedentItems(antecedentItems);
@@ -509,21 +317,47 @@ public class MainService {
 //
 //    return new PageImpl<>(pageContent, pageable, total);
 //}
-    public Page<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester, Pageable pageable) {
+    public Map<String, List<SubjectRecommendDTO>> sortBy(List<SubjectRecommendDTO> dtoList){
+        Map<String, List<SubjectRecommendDTO>> map = new TreeMap<>(new Comparator<String>() {
+
+            @Override
+            public int compare(String o1, String o2) {
+                String[] value1 = o1.split("-");
+                String[] value2 = o2.split("-");
+                int year1=Integer.parseInt(value1[1].replace("Năm "," ").trim());
+                int year2=Integer.parseInt(value2[1].replace("Năm "," ").trim());
+                if(year1!=year2){
+                    return year1-year2;
+                }
+                int semester1=Integer.parseInt(value1[0].replace("Học kỳ "," ").trim());
+                int semester2=Integer.parseInt(value2[0].replace("Học kỳ "," ").trim());
+                return semester1-semester2;
+
+            }
+        });
+            for(SubjectRecommendDTO dto: dtoList){
+                String key= "Học kỳ "+dto.getSemester()+"- Năm "+dto.getYear();
+                if(!map.containsKey(key)){
+                    map.put(key,new ArrayList<SubjectRecommendDTO>());
+                }
+                map.get(key).add(dto);
+            }
+                return  map;
+
+    }
+    public List<SubjectRecommendDTO> suggestSubjectsForUser(String userId, int semester) {
         System.out.println("hhhhhhhhhh");
         // Môn đã học và pass rồi
         Set<String> learnedSubjectIds = scoreRepository.findByUserIdAndPassed(userId, 1)
                 .stream()
                 .map(score -> score.getSubject().getId())
                 .collect(Collectors.toSet());
-
-        // Lấy danh sách curriculum môn học trong kỳ (1 lần)
+        // Lấy danh sách curriculum môn học trong kỳ này
         List<CurriculumCourse> curriculumCourseList = curriculumCourseRepository.findCurriculumCourseBySemester(semester);
         Set<String> subjectIdsInCurriculum = curriculumCourseList.stream()
                 .map(cc -> cc.getSubject().getId())
                 .collect(Collectors.toSet());
-
-        // Load tất cả Subject trong hoc ki này 1 lần
+        // Load tất cả Subject được mở trong hoc ki này
         Map<String, Subject> subjectInCurriculum = subjectRepository.findAllById(subjectIdsInCurriculum).stream()
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
         // Lấy rule theo utility giảm dần
@@ -534,23 +368,28 @@ public class MainService {
                 .map(String ::trim)
                 .collect(Collectors.toSet());
 
-        // Load tất cả Subject 1 lần
+        // Load tất cả Subject 1 lần trong rule
         Map<String, Subject> subjectMap = subjectRepository.findAllById(allSubjectIds).stream()
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
-        // Load tất cả prerequisite 1 lần cho các subject cần xét (cần thêm method findBySubjects)
-        List<Prerequisite> allPrerequisites = prerequisiteRepository.findBySubjectIn(new ArrayList<>(subjectMap.values()));
+        // Load tất cả prerequisite 1 lần
+        List<Prerequisite> allPrerequisites = prerequisiteRepository.findAll();
+        System.out.println("preeeeeeee"+allPrerequisites);
         // Map subjectId -> List<Prerequisite>
         Map<String, List<Prerequisite>> prerequisiteMap = allPrerequisites.stream()
                 .collect(Collectors.groupingBy(pr -> pr.getSubject().getId()));
 
         Set<SubjectRecommendDTO> suggestions = new LinkedHashSet<>();
+        List<String> recommendedsubjectId=new ArrayList<>();//danh sách id môn học đã được bỏ vào gợi ý
         for(String subjectId:subjectIdsInCurriculum ){
             if(learnedSubjectIds.contains(subjectId)){
                 continue;
             }
             Subject subject = subjectInCurriculum.get(subjectId);
             if(subject.getSubjectGroup().getId().equals("BB")){
+                CurriculumCourse course=curriculumCourseList.stream()
+                        .filter(c -> c.getSubject() != null && subjectId.equals(c.getSubject().getId()))
+                        .findFirst().orElse(null);
                 List<Prerequisite> prerequisites = prerequisiteMap.getOrDefault(subjectId, Collections.emptyList());
                 boolean eligible = prerequisites.stream()
                         .allMatch(pr -> learnedSubjectIds.contains(pr.getPrerequisiteSubject().getId()));
@@ -562,8 +401,10 @@ public class MainService {
                 SubjectRecommendDTO subjectRecommendDTO = new SubjectRecommendDTO();
                 subjectRecommendDTO.setSubject(subject);
                 subjectRecommendDTO.setPreSubjects(preSubjects);
-                subjectRecommendDTO.setUtility(-1);
+                subjectRecommendDTO.setSemester(course.getSemester());
+                subjectRecommendDTO.setYear(course.getYear());
                 suggestions.add(subjectRecommendDTO);
+                recommendedsubjectId.add(subjectId);
             }}
         }
 
@@ -573,46 +414,48 @@ public class MainService {
                     .map(String::trim) // Trim whitespace from each individual ID
                     .collect(Collectors.toList()); // Collect them into a List<String>
             boolean hasLearnedAllAntecedent = itemIds.stream().allMatch(learnedSubjectIds::contains);
-            System.out.println(hasLearnedAllAntecedent);
             if (!hasLearnedAllAntecedent) continue;
-            String consequentSubjectId = rule.getConsequentItems();
-            System.out.println(consequentSubjectId);
-//            for (String subjectId : itemIds) {
-                if (!learnedSubjectIds.contains(consequentSubjectId)) {
+            String consequentSubjectId = rule.getConsequentItems();//môn gợi ý
+            if(recommendedsubjectId.contains(consequentSubjectId)||learnedSubjectIds.contains(consequentSubjectId)){
+                continue;
+            }
+//            for (String subjectId : itemIds)
                     Subject subject = subjectMap.get(consequentSubjectId);
-                    System.out.println(subject);
                     if (subject == null) continue;
                     if (!subjectIdsInCurriculum.contains(consequentSubjectId)) continue;
-
                     // Kiểm tra eligibility dựa trên prerequisite đã load sẵn
                     List<Prerequisite> prerequisites = prerequisiteMap.getOrDefault(consequentSubjectId, Collections.emptyList());
                     boolean eligible = prerequisites.stream()
                             .allMatch(pr -> learnedSubjectIds.contains(pr.getPrerequisiteSubject().getId()));
-
-                    if (eligible) {
+                    if(!eligible){
+                        continue;
+                    }
+                        CurriculumCourse course=curriculumCourseList.stream()
+                                .filter(c -> c.getSubject() != null && consequentSubjectId.equals(c.getSubject().getId()))
+                                .findFirst().orElse(null);
                         List<Subject> preSubjects = prerequisites.stream()
                                 .map(Prerequisite::getPrerequisiteSubject)
                                 .collect(Collectors.toList());
-
                         SubjectRecommendDTO dto = new SubjectRecommendDTO();
                         dto.setSubject(subject);
-                        dto.setUtility(rule.getUtility().floatValue());
+                        dto.setUtility(rule.getUtility());
                         dto.setPreSubjects(preSubjects);
+                        dto.setSemester(course.getSemester());
+                        dto.setYear(course.getYear());
+                        dto.setSupport(rule.getSupport());
+                        dto.setConfidence(rule.getConfidence());
                         suggestions.add(dto);
                     }
-                }
-//            }
-        }
 
+//        // Phân trang thủ công
+//        List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
+//        int total = allSuggestions.size();
+//        int start = (int) pageable.getOffset();
+//        int end = Math.min((start + pageable.getPageSize()), total);
+//        List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
 
-        // Phân trang thủ công
-        List<SubjectRecommendDTO> allSuggestions = new ArrayList<>(suggestions);
-        int total = allSuggestions.size();
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), total);
-        List<SubjectRecommendDTO> pageContent = (start < end) ? allSuggestions.subList(start, end) : Collections.emptyList();
-
-        return new PageImpl<>(pageContent, pageable, total);
+//        return new PageImpl<>(pageContent, pageable, total);
+        return new ArrayList<>(suggestions);
     }
 
     /**
@@ -652,6 +495,8 @@ public class MainService {
             ruleActives.add(new RuleActive(rule));
         }
         ruleActiveRepository.saveAll(ruleActives);
+        System.out.println("Đã chuyển dữ liệu từ Rule sang RuleActive " + ruleActives.size());
+
     }
 
 
