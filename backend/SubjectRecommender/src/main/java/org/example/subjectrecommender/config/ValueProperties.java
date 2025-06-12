@@ -11,9 +11,14 @@ public class ValueProperties {
    private String fileExportTransaction;
    private String fileAlgoHUSRM;
    private boolean filterPassedSubjects;
-   private int minUtility;
+   private double minUtility;
+   private double minUtilityConfidence;
+   private int maxAntecedentSize;
+   private int maxConsequentSize;
    private String secret_key;
    private int time_token;
    private String email;
+   private String pathFileExportScoreErro;
+   private int totalTransaction;
 
 }

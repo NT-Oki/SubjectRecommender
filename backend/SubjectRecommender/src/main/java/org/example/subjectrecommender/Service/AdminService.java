@@ -1,6 +1,7 @@
 package org.example.subjectrecommender.Service;
 
 import org.example.subjectrecommender.Model.CurriculumCourse;
+import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.database.ImportData;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +27,7 @@ public class AdminService {
     CurriculumCourseService curriculumCourseService;
     @Autowired
     ImportData importData;
+
     public List<ScoreAdminDto> getAllScore() {
         return scoreService.getAll();
     }
@@ -70,10 +73,14 @@ public class AdminService {
     public ByteArrayInputStream exportCurriculum(String curriculumId, String subjectSearch ) throws IOException {
         return curriculumCourseService.export(curriculumId,subjectSearch);
     }
-    public List<ErrorRow> importScore(File file, String fileId) throws IOException {
-        return importData.importScore(file,fileId);
+    public void importScore(File file, String fileId) throws IOException {
+         importData.importScore(file,fileId);
     }
-    public void exportErrorRowsToExcel(List<ErrorRow> errorRows, String output) throws IOException {
-        importData.exportErrorRowsToExcel(errorRows,output);
+    public ByteArrayInputStream exportErrorRowsToExcel(List<ErrorRow> errorRows) throws IOException {
+        return importData.exportErrorRowsToExcel(errorRows);
+    }
+    public void cleanupImportData(String fileId, FileStorageComponent fileStorage) throws IOException {
+        importData.cleanupImportData(fileId,fileStorage);
+
     }
 }

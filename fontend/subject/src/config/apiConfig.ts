@@ -24,7 +24,8 @@ const API_ENDPOINTS = {
       EXPORT:`${ADMIN_URL}/scores/export`,
       SCORE:`${ADMIN_URL}/score`,
       IMPORT:`${ADMIN_URL}/scores/import`,
-      IMPORT_ASYNC:`${ADMIN_URL}/scores/import-async`,
+      GET_IMPORT_ERRO: `${ADMIN_URL}/scores/import/errors`,
+      EXPORT_ERRO: `${ADMIN_URL}/scores/export-erros`,
       
     },
     STUDENT: {

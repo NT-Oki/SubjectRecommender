@@ -9,6 +9,7 @@ import nonglam from '../assets/nonglam.jpg';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleExclamation, faXmark, faLock, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { toast } from "react-toastify";
 const Login = () => {
     const [userID, setUserID] = useState("");
     const [password, setPassword] = useState("");
@@ -43,7 +44,7 @@ const Login = () => {
                     password
                 }
             });
-
+            toast.success("Đăng nhập thành công!");
             const token = response.data.token;
             const userId = response.data.userId;
             const exp = response.data.exp;
@@ -51,8 +52,7 @@ const Login = () => {
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("userId", userId);
             sessionStorage.setItem("exp", exp);
-            sessionStorage.setItem("role", role);
-            alert("Đăng nhập thành công!");
+            sessionStorage.setItem("role",role);
             // Ví dụ chuyển trang
             if (role == 1) {
                 navigate("/admin/score");
@@ -62,9 +62,9 @@ const Login = () => {
 
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
-                alert(error.response?.data);
+               toast.error(error.response?.data);
             } else {
-                alert(error);
+                toast.error(error);
             }
         }
     };
