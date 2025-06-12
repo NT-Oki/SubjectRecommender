@@ -190,7 +190,7 @@ public class MainService {
     //3
     public void readAndSaveRules() throws IOException {
         String fileAlgoHUSRM= valueProperties.getFileAlgoHUSRM();
-        ruleRepository.deleteAll();
+        ruleRepository.truncate();
         List<Rule> rulesToSave = new ArrayList<>();
         int parsedRulesCount = 0;
         // Ví dụ: 213603,214242,214321,214389 ==> 214352,214442 #SUP: 1.0 #CONF: 1.0 #UTIL: 139.0
@@ -488,7 +488,7 @@ public class MainService {
         return subjectGroupRequirementDTOList;
     }
     public void transFromRuleToRuleActive(){
-        ruleActiveRepository.deleteAll();
+        ruleActiveRepository.truncate();
         List<Rule> rules=ruleRepository.findAll();
         List<RuleActive> ruleActives=new ArrayList<>();
         for(Rule rule: rules){
