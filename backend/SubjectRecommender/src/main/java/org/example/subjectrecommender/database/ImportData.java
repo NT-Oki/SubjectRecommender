@@ -9,6 +9,7 @@ import org.example.subjectrecommender.component.ImportProgressTracker;
 import org.example.subjectrecommender.config.ValueProperties;
 import org.example.subjectrecommender.dto.ErrorRow;
 import org.example.subjectrecommender.dto.ScoreAddDTO;
+import org.example.subjectrecommender.dto.UserAddDTO;
 import org.example.subjectrecommender.util.ConvertToUnicode;
 import org.example.subjectrecommender.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,32 +150,139 @@ public class ImportData {
         System.out.println("Đã thêm thành công vào curriculumcourses: "+curriculumCourseList.size());
 
     }
-    public void importUser(InputStream inputStream) throws IOException {
-        Sheet sheet = getSheet(inputStream, "DSSV");
-        List<User> users=new ArrayList<>();
-        Row headerRow = sheet.getRow(0);
-        Map<String, Integer> columnIndex = new HashMap<>();
+    public void importUser(File file,int role, String curriculumVersion, String fileId) throws IOException {
+        List<ErrorRow> errorRows = new ArrayList<>();
+        List<UserAddDTO> userAddDTOList=new ArrayList<>();
+        try (InputStream is = new FileInputStream(file);
+             Workbook workbook = new XSSFWorkbook(is)
+        ) {
+            Sheet sheet = workbook.getSheet("DSSV");
+            if (sheet == null) {
+                tracker.setProgress(fileId, -1); // Báo lỗi
+                addErroRowHeader(errorRows, 0, "Không tìm thấy sheet MSSV");
+                tracker.setErrorRows(fileId, errorRows); // Lưu lỗi vào tracker
+                return;
+            }
+            userAddDTOList = new ArrayList<>();
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null) {
+                tracker.setProgress(fileId, -1);
+                addErroRowHeader(errorRows, 0, "File Excel không có hàng tiêu đề.");
+                tracker.setErrorRows(fileId, errorRows);
+                return;
+            }
+            Map<String, Integer> columnIndex = new HashMap<>();
+            // Lấy vị trí cột theo tên
+            for (Cell cell : headerRow) {
+                columnIndex.put(cell.getStringCellValue().trim(), cell.getColumnIndex());
+            }
+            String[] requiredColumns = {"masv", "Họ", "Tên", "Khóa"};
+            boolean isAllHeader = Arrays.stream(requiredColumns)
+                    .allMatch(col -> columnIndex.containsKey(col));
+            if (!isAllHeader) {
+                tracker.setProgress(fileId, -1);
+                addErroRowHeader(errorRows, 0, "Hàng tiêu đề thiếu cột");
+                tracker.setErrorRows(fileId, errorRows);
+                return;
+            }
+            int totalRows = sheet.getLastRowNum();
+            for (int i = 1; i <= totalRows; i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+                UserAddDTO userAddDTO = new UserAddDTO();
+                Cell mssv_cell = row.getCell(columnIndex.get("masv"));
+                List<String> mssv_get = getValidateString(mssv_cell);
+                if (!(mssv_get.get(1).equals("ok"))) {
+                    addErroRow(errorRows, i, row, mssv_get.get(0));
+                    continue;
+                }
+                List<String> checkLengthMssv = checkLengthMssv(mssv_get.get(0));
+                if (!(checkLengthMssv.get(1).equals("ok"))) {
+                    addErroRow(errorRows, i, row, checkLengthMssv.get(0));
+                    continue;
+                }
+                String mssv = mssv_get.get(0);
+                userAddDTO.setUserId(mssv);
+                Cell name_cell = row.getCell(columnIndex.get("Tên"));
+                List<String> name_get = getValidateString(name_cell);
+                if (!(name_get.get(1).equals("ok"))) {
+                    addErroRow(errorRows, i, row, name_get.get(0));
+                    continue;
+                }
+                String[] itemName = (" " + name_get.get(0)).split(" ");
+                String name = "";
+                if (itemName.length > 1) {
+                    name = itemName[itemName.length - 1];
+                } else {
+                    name = name_get.get(0);
+                }
+                String check_length_name = checkLengthString(name_get.get(0), 7);
+                if (!(check_length_name.equals("ok"))) {
+                    addErroRow(errorRows, i, row, check_length_name);
+                    continue;
+                }
+                userAddDTO.setName(name);
 
-        // Lấy vị trí cột theo tên
-        for (Cell cell : headerRow) {
-            columnIndex.put(cell.getStringCellValue().trim(), cell.getColumnIndex());
+                Cell lastName_cell = row.getCell(columnIndex.get("Họ"));
+                List<String> lastName_get = getValidateString(lastName_cell);
+                if (!(lastName_get.get(1).equals("ok"))) {
+                    addErroRow(errorRows, i, row, lastName_get.get(0));
+                    continue;
+                }
+                String lastName = lastName_get.get(0);
+                if (itemName.length > 1) {
+                    for (int e = 0; e < itemName.length - 1; e++) {
+                        lastName += (" " + lastName_get.get(0));
+                    }
+                }
+                String checkLengthLastname = checkLengthString(lastName, 25);
+                if (!checkLengthLastname.equals("ok")) {
+                    addErroRow(errorRows, i, row, checkLengthLastname);
+                    continue;
+                }
+                userAddDTO.setLastName(lastName);
+                Cell enrollmentYear_cell = row.getCell(columnIndex.get("Khóa"));
+                List<Double> enrollmentYear_get = getValidateNumber(enrollmentYear_cell);
+                if (!(enrollmentYear_get.get(1) == 1.0)) {
+                    addErroRow(errorRows, i, row, "Lỗi không thể lấy ra năm nhập học");
+                    continue;
+                }
+                int enrollmentYear = Integer.parseInt(String.valueOf(enrollmentYear_get.get(0)));
+                if (enrollmentYear < 2020 || enrollmentYear > 2025) {
+                    addErroRow(errorRows, i, row, "dữ liệu năm học không nằm trong khoảng 2020-2025");
+                    continue;
+                }
+                userAddDTO.setEnrollmentYear(enrollmentYear);
+                userAddDTOList.add(userAddDTO);
+                int currentProgress = (int) (((double) i / totalRows) * 90);
+                tracker.setProgress(fileId, Math.min(currentProgress, 99));
+            }
+            int userSavedCount = 0;
+            for (UserAddDTO userAddDTO : userAddDTOList) {
+                try {
+                    userService.addUser(userAddDTO,role,curriculumVersion);
+                    userSavedCount++;
+                    int saveProgress = 90 + (int) (((double) userSavedCount / userAddDTOList.size()) * 9);
+                    tracker.setProgress(fileId, Math.min(saveProgress, 99));
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi lưu SV " + userAddDTO.getUserId() + ": " + e.getMessage());
+                }
+            }
+            tracker.setProgress(fileId, 100); // Hoàn tất tiến trình khi mọi thứ đã xong
+            tracker.setErrorRows(fileId, errorRows);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            tracker.setProgress(fileId, -1); // Báo lỗi IO
+            addErroRowHeader(errorRows, 0, "Lỗi đọc file: " + e.getMessage());
+            tracker.setErrorRows(fileId, errorRows);
+        } catch (Exception e) {
+            e.printStackTrace();
+            tracker.setProgress(fileId, -1); // Báo lỗi chung
+            addErroRowHeader(errorRows, 0, "Lỗi không xác định trong quá trình import: " + e.getMessage());
+            tracker.setErrorRows(fileId, errorRows);
         }
-
-        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-            Row row = sheet.getRow(i);
-            if (row == null) continue;
-            User user = new User();
-            user.setId(row.getCell(columnIndex.get("masv")).getStringCellValue().trim());
-            user.setLastName(row.getCell(columnIndex.get("Họ")).getStringCellValue().trim());
-            user.setName(row.getCell(columnIndex.get("Tên")).getStringCellValue().trim());
-            user.setEnrollmentYear(Integer.parseInt(row.getCell(columnIndex.get("Khóa")).getStringCellValue()));
-            user.setMajor(row.getCell(columnIndex.get("Tên ngành")).getStringCellValue().trim());
-            user.setPassword(PasswordUtil.hashPassword(ConvertToUnicode.removeAccentAndToLower(user.getName())+user.getId()));
-            userService.save(user);
-            users.add(user);
-        }
-
-        System.out.println("Đã thêm thành công vào users: "+users.size());
+        System.out.println("Đã thêm thành công vào users: " + userAddDTOList.size());
 
     }
 
@@ -218,6 +326,12 @@ public class ImportData {
             result.add("erro");
         }
         return result;
+    }
+    public String checkLengthString(String check,int size){
+        if(check.length()>size){
+            return "Dữ liệu vượt quá độ dài cho phép " +size;
+        }
+        return "ok";
     }
   public String checkValidScore(float score){//kiểm tra xem có nằm trong khoang(0-10)
         if(0<=score&&score<=10){
@@ -528,6 +642,7 @@ public class ImportData {
             }
         }
     }
+
 
 
 

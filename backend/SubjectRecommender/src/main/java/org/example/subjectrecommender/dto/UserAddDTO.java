@@ -11,4 +11,5 @@ public class UserAddDTO {
     private String name;
     private int enrollmentYear;
     private String curriculumId;
+    private int role;
 }

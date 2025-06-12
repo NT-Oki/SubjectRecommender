@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.subjectrecommender.Model.CurriculumVersion;
 import org.example.subjectrecommender.Model.User;
 import org.example.subjectrecommender.Repository.CurriculumVersionRepository;
 import org.example.subjectrecommender.Repository.UserRepository;
@@ -25,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -143,17 +145,28 @@ public class UserService {
         return userRepository.existsById(id);
     }
 
-    public void addUser(UserAddDTO dto) {
+    public void addUser(UserAddDTO dto, int role, String curriculumVersionId) {
+        Optional<User> userDto=userRepository.findById(dto.getUserId());
+        if(userDto.isPresent()){
+            System.out.println("Đã tồn tại " + dto.getUserId());
+            return;
+        }
+        Optional<CurriculumVersion> curriculumVersion = curriculumVersionRepository.findById(curriculumVersionId);
+        if(curriculumVersion.isEmpty()){
+            System.out.println("Chương trình đào tạo không tồn tại" + dto.getUserId());
+        }
         User user=new User();
         String pass=PasswordUtil.hashPassword(ConvertToUnicode.removeAccentAndToLower(dto.getName())+dto.getUserId());
         user.setName(dto.getName());
         user.setLastName(dto.getLastName());
-        user.setCurriculumVersion(curriculumVersionRepository.getReferenceById(dto.getCurriculumId()));
+        if(role==2){
+            user.setCurriculumVersion(curriculumVersion.get());
+        }
         user.setEnrollmentYear(dto.getEnrollmentYear());
         user.setId(dto.getUserId());
         user.setMajor("Công nghệ thông tin");
         user.setPassword(pass);
-        user.setRole(2);
+        user.setRole(role);
         userRepository.save(user);
     }
 }

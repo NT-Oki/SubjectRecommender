@@ -64,8 +64,8 @@ public class AdminService {
         return userService.checkIdExists(id);
     }
 
-    public void addUser(UserAddDTO dto) {
-         userService.addUser(dto);
+    public void addUser(UserAddDTO dto, int role, String curriculumVersion) {
+         userService.addUser(dto,role,curriculumVersion);
     }
     public Map<String,List<CurriculumCourseDTO>> getAll(String curriculumId, String subjectSearch){
         return curriculumCourseService.findAlLGroupByCurriculumId(curriculumId,subjectSearch);
@@ -82,5 +82,8 @@ public class AdminService {
     public void cleanupImportData(String fileId, FileStorageComponent fileStorage) throws IOException {
         importData.cleanupImportData(fileId,fileStorage);
 
+    }
+    public void importUser(File file,int role,String curriculumVersion, String fileId) throws IOException {
+        importData.importUser(file,role,curriculumVersion,fileId);
     }
 }
