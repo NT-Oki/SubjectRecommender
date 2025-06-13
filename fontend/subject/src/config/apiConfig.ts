@@ -19,20 +19,22 @@ const API_ENDPOINTS = {
   ADMIN:{
     UPLOADFILE:`${ADMIN_URL}/upload-temp`,
     PROGRESS: `${ADMIN_URL}/progress`,
+    EXPORT_ERRO: `${ADMIN_URL}/export-erros`,
+    GET_IMPORT_ERRO: `${ADMIN_URL}/import/errors`,
     SCORE: {
       LISTSCORE:`${ADMIN_URL}/scores`,
       EXPORT:`${ADMIN_URL}/scores/export`,
       SCORE:`${ADMIN_URL}/score`,
       IMPORT:`${ADMIN_URL}/scores/import`,
-      GET_IMPORT_ERRO: `${ADMIN_URL}/scores/import/errors`,
-      EXPORT_ERRO: `${ADMIN_URL}/scores/export-erros`,
-      
+  
     },
     STUDENT: {
       LISTUSER:`${ADMIN_URL}/users`,
       EXPORT:`${ADMIN_URL}/users/export`,
       USER:`${ADMIN_URL}/user`,
       CHECKEXIST: `${ADMIN_URL}/users/exist`,
+      IMPORT: `${ADMIN_URL}/users/import`,
+      
     },
     CURRICULUM:{
       LIST: `${ADMIN_URL}/curriculum`,

@@ -9,7 +9,7 @@ import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAsterisk, faCircleCheck, faStarOfLife } from "@fortawesome/free-solid-svg-icons";
+import { faStarOfLife } from "@fortawesome/free-solid-svg-icons";
 
 const RecommendList = () => {
   interface SubjectGroup {

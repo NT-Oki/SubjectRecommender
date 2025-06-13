@@ -7,8 +7,6 @@ import { GiTwirlyFlower } from "react-icons/gi";
 import axios from 'axios';
 import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSquarePlus, faXmark } from "@fortawesome/free-solid-svg-icons"
 const CurriculumAdmin = () => {
     interface SubjectGroup {
         id: string;
@@ -48,8 +46,6 @@ const CurriculumAdmin = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [searchSubjectId, setSearchSubjectId] = useState<string>("");
     const [searchCurriculumVersion, setSearchCurriculumVersion] = useState<string | null>("7480201_2020");
-    const [isAdd, setIsAdd] = useState<boolean>(true);
-    // const [versionNameAdd, setVersionNameAdd] = useState<string>("");
     useEffect(() => {
         const fetchUserScore = async () => {
             try {
@@ -74,9 +70,6 @@ const CurriculumAdmin = () => {
 
         fetchUserScore();
     }, [searchSubjectId, searchCurriculumVersion]);
-
-
-
     const handleExport = async () => {
         try {
             const res = await axios.get(API_ENDPOINTS.ADMIN.CURRICULUM.EXPORT, {
@@ -107,11 +100,6 @@ const CurriculumAdmin = () => {
             alert(err.response?.data || "Lỗi khi xuất file");
         }
     };
-
-
-    function handleAdd(): void {
-        throw new Error("Function not implemented.")
-    }
 
     return (
         // body--------------------------------------
@@ -161,7 +149,6 @@ const CurriculumAdmin = () => {
                     </Select>
                 </FormControl>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
-                <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => { }}>Thêm</Button>
             </Box>
 
             <Box
@@ -271,170 +258,7 @@ const CurriculumAdmin = () => {
                     </Fragment>)
                 )) : null
             }
-            {
-                isAdd && (
-                    <>
-                        {/* Lớp nền mờ phía sau */}
-                        <Box
-                            sx={{
-                                position: 'fixed',
-                                top: 0,
-                                left: 0,
-                                width: '100vw',
-                                height: '100vh',
-                                bgcolor: 'rgba(0, 0, 0, 0.5)',
-                                zIndex: 999,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            {/* Popup chính */}
-                            <Box
-                                sx={{
-                                    position: 'relative',
-                                    width: "400px",
-                                    bgcolor: '#e1f7d5',
-                                    border: '1px solid rgb(59, 216, 93)',
-                                    borderRadius: 2,
-                                    boxShadow: 3,
-                                    zIndex: 1000,
-                                    p: 3,
-                                }}
-                            >
-                                {/* Nút đóng góc phải */}
-                                <Box
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 8,
-                                        right: 8,
-                                        // width:"20px"
-                                    }}
-                                >
-                                    <Button
-                                        onClick={() => setIsAdd(false)}
-                                        variant="outlined"
-                                        color="warning"
-                                        size="small"
-                                        sx={{
-                                            ":hover": {
-                                                backgroundColor: "red",
-                                                color: "white"
-                                            }
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faXmark} size="2x" />
-                                    </Button>
-                                </Box>
 
-                                {/* Header */}
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 2,
-                                        mb: 2,
-                                        mt: 2,
-                                    }}
-                                >
-                                    <FontAwesomeIcon icon={faSquarePlus} color="orange" style={{ fontSize: '30px', verticalAlign: 'middle' }} />
-                                    <Typography sx={{ fontSize: "25px", fontFamily: "sans-serif", fontWeight: "bold", alignContent: "center" }}>
-                                        Thêm chương trình đào tạo
-                                    </Typography>
-                                </Box>
-                               
-                                 {/* năm nhập học */}
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        margin: "10px",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-
-                                    }}
-                                >
-                                    <FormControl
-                                        sx={{ width: "350px", marginTop: 2 }}
-                                        error={isAdd}
-                                    >
-                                        <InputLabel id="year-select-label">Áp dụng từ năm</InputLabel>
-                                        <Select
-                                            labelId="year-select-label"
-                                            value={isAdd}
-                                            onChange={() => {
-
-                                            }}
-                                            label="Năm nhập học"
-                                        >
-
-                                            <MenuItem value={"2023"}>
-                                                2023
-                                            </MenuItem>
-                                        </Select>
-                                        {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
-                                    </FormControl>
-                                </Box>
-                               
-                                {/* Chọn file Excel */}
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        margin: "10px",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        flexDirection: "column",
-                                    }}
-                                >
-                                    <FormControl fullWidth sx={{ mt: 2 }}>
-                                        <InputLabel shrink htmlFor="import-file-input">
-                                            Chọn file Excel để thêm dữ liệu
-                                        </InputLabel>
-                                        <input
-                                            id="import-file-input"
-                                            type="file"
-                                            accept=".xlsx, .xls"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    // giả sử bạn có state này
-                                                }
-                                            }}
-                                            style={{
-                                                marginTop: "10px",
-                                                border: "1px solid #ccc",
-                                                padding: "6px",
-                                                borderRadius: "4px",
-                                                backgroundColor: "#e1f7d5",
-                                            }}
-                                        />
-                                    </FormControl>
-                                </Box>
-
-                                {/* Button hành động */}
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        mt: 3,
-                                    }}
-                                >
-                                    <Button
-                                        onClick={handleAdd} // hoặc hàm xử lý đổi mật khẩu
-                                        variant="contained"
-                                        color="success"
-                                        sx={{
-                                            fontFamily: "unset"
-                                        }}
-                                    >
-                                        Thêm
-                                    </Button>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </>
-                )
-            }
         </>
 
         //    end Body---------------------------------

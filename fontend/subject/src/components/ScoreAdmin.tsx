@@ -65,7 +65,7 @@ const ScoreAdmin = () => {
     const [searchSemester, setSearchSemester] = useState("");
     const [searchSubjectName, setSearchSubjectName] = useState("");
     const [searchStatus, setSearchStatus] = useState("");
-    const token = sessionStorage.getItem("token"); // Lấy token từ sessionStorage
+    const token = sessionStorage.getItem("token"); 
     const [scoreUpdate, setScoreUpdate] = useState<number>(-1);
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [editScoreId, setEditScoreId] = useState<number | null>(null);
@@ -376,7 +376,7 @@ const ScoreAdmin = () => {
     // --- Hàm riêng để lấy chi tiết lỗi từ Backend ---
     const fetchErrors = async (fileId: string) => {
         try {
-            const errorRes = await axios.get(API_ENDPOINTS.ADMIN.SCORE.GET_IMPORT_ERRO, {
+            const errorRes = await axios.get(API_ENDPOINTS.ADMIN.GET_IMPORT_ERRO, {
                 params: { fileId },
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -393,7 +393,7 @@ const ScoreAdmin = () => {
     };
     const handleDownloadErroImport = async () => {
         try {
-            const res = await axios.post(API_ENDPOINTS.ADMIN.SCORE.EXPORT_ERRO, errorRows, {
+            const res = await axios.post(API_ENDPOINTS.ADMIN.EXPORT_ERRO, errorRows, {
 
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -1,22 +1,27 @@
-import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, FormHelperText, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, TextField, Pagination, FormControl, FormHelperText, InputLabel, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, Radio, FormControlLabel, TableContainer, Table, Paper, TableHead, TableRow, TableCell, TableBody, LinearProgress } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
 import "@fontsource/noto-sans/latin.css"
 import { GiTwirlyFlower, } from "react-icons/gi";
 import axios from 'axios';
-import { ChangeEvent, Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import API_ENDPOINTS from "../config/apiConfig";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
-import {  toast } from 'react-toastify';
+import { faCheck, faDownload, faPenToSquare, faUserPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { toast, ToastContainer } from 'react-toastify';
 const StudentAdmin = () => {
     interface UserDTO {
         id: string;
         lastName: string;
         name: string;
         major: string;
-        enrollmentYear: number; // Lưu ý: bạn có viết sai chính tả, nên giữ nguyên hoặc sửa lại
+        enrollmentYear: number;
+    }
+    interface ErrorRow {
+        rowNumber: number;
+        rowData: string[];
+        errorReason: string;
     }
     const token = sessionStorage.getItem("token");
     const [data, setData] = useState<UserDTO[] | null>([]);
@@ -34,6 +39,7 @@ const StudentAdmin = () => {
     const [mssvAdd, setMssvAdd] = useState<string | null>(null);
     const [lastNameAdd, setLastNameAdd] = useState<string | null>(null);
     const [nameAdd, setNameAdd] = useState<string | null>(null);
+    const [roleAdd, setRoleAdd] = useState<number>(2);
     const [enrollmentYearAdd, setEnrollmentYearAdd] = useState<number | null>(2020);
     const [curriculumAdd, setCurriculumAdd] = useState<string | null>("7480201_2020");
     const [mssvAddErro, setMssvAddErro] = useState<string | null>(null);
@@ -45,11 +51,12 @@ const StudentAdmin = () => {
     const [isLastNameAddErro, setIsLastNameAddErro] = useState<boolean>(true);
     const [isNameAddErro, setIsNameAddErro] = useState<boolean>(true);
     const [isCurriculumAddErro, setIsCurriculumAddErro] = useState<boolean>(false);
-       const [isImport, setIsImport] = useState<boolean>(false);
-       const [progress, setProgress] = useState(0);
-       // const [errorRows, setErrorRows] = useState([]);
-       const [uploading, setUploading] = useState(false);
-       const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isImport, setIsImport] = useState<boolean>(false);
+    const [progress, setProgress] = useState(0);
+    const [errorRows, setErrorRows] = useState<ErrorRow[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [pollingIntervalId, setPollingIntervalId] = useState<number | null>(null);
     const fetchUser = async () => {
 
         // const userId = sessionStorage.getItem("userId");
@@ -71,16 +78,25 @@ const StudentAdmin = () => {
             console.log(response.data)
             setData(response.data.users);
             setTotal(response.data.total)
-            
+
         } catch (error) {
             console.error("Lỗi khi lấy thông tin điểm user:", error);
         } finally {
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        fetchUser();
-    }, [page, pageSize]);
+
+    
+        useEffect(() => {
+            fetchUser();
+    
+            // Cleanup function cho useEffect
+            return () => {
+                if (pollingIntervalId) {
+                    clearInterval(pollingIntervalId);
+                }
+            };
+        }, [page, pageSize, pollingIntervalId]); // Thêm pollingIntervalId vào dependency array
     const handleSearchClick = () => {
         setPage(1); // Quay về trang 1 khi tìm kiếm mới
         fetchUser();
@@ -91,7 +107,7 @@ const StudentAdmin = () => {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
-                responseType: 'blob', // ⚠️ BẮT BUỘC: để axios hiểu đây là file
+                responseType: 'blob',
             });
 
             const blob = new Blob([res.data], {
@@ -142,31 +158,36 @@ const StudentAdmin = () => {
 
 
     const handleAdd = async () => {
-        if(!isMssvAddErro&&!isLastNameAddErro&&!isNameAddErro&&!isCurriculumAddErro&&!isenrollmentYearAddErro){
-        try {
-            const res = await axios.post(API_ENDPOINTS.ADMIN.STUDENT.USER, {
-                userId: mssvAdd,
-                lastName: lastNameAdd?.toLocaleUpperCase(),
-                name: nameAdd?.toLocaleUpperCase(),
-                enrollmentYear: enrollmentYearAdd,
-                curriculumId: curriculumAdd
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            console.log(res.data);
-            setIsAdd(false);
-            fetchUser();
-        } catch (err: any) {
-            console.log(err.response.data);
+        if (!isMssvAddErro && !isLastNameAddErro && !isNameAddErro && !isCurriculumAddErro && !isenrollmentYearAddErro) {
+            try {
+                const res = await axios.post(API_ENDPOINTS.ADMIN.STUDENT.USER, {
+                    userId: mssvAdd,
+                    lastName: lastNameAdd?.toLocaleUpperCase(),
+                    name: nameAdd?.toLocaleUpperCase(),
+                    enrollmentYear: enrollmentYearAdd,
+                    curriculumId: curriculumAdd,
+                    role: roleAdd
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                console.log(res.data);
+                setIsAdd(false);
 
-        }}else{
+                fetchUser();
+                toast.success("Thêm 1 " + `${roleAdd == 2 ? "sinh viên" : "giảng viên"}` + " thành công")
+            } catch (err: any) {
+                console.log(err.response.data);
+                toast.success("Thêm 1 " + `${roleAdd == 2 ? "sinh viên" : "giảng viên"}` + " thất bại")
+
+            }
+        } else {
             console.log("dữ liệu chưa cho phép thêm sinh viên");
-            
+
         }
     }
-    const checkMssvAdd = async (e:any) => {
+    const checkMssvAdd = async (e: any) => {
         try {
             const res = await axios.get(API_ENDPOINTS.ADMIN.STUDENT.CHECKEXIST, {
                 params: {
@@ -179,7 +200,7 @@ const StudentAdmin = () => {
             if (res.data == true) {
                 setMssvAddErro("Mã số sinh viên đã tồn tại")
                 setIsMssvAddErro(true);
-            }else{
+            } else {
                 setIsMssvAddErro(false);
             }
 
@@ -188,13 +209,198 @@ const StudentAdmin = () => {
 
         }
     }
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const allowedTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+                'application/vnd.ms-excel', // .xls
+            ];
+            if (allowedTypes.includes(file.type)) {
+                setSelectedFile(file);
+                // Reset trạng thái khi chọn file mới
+                setProgress(0);
+                setErrorRows([]);
+            } else {
+                setSelectedFile(null);
+                toast.error("Vui lòng chọn file Excel hợp lệ (.xlsx hoặc .xls).");
+            }
+        }
+    };
+    const handleImport = async () => {
+        if (!selectedFile) {
+            toast.error("Vui lòng chọn một file để import.");
+            return;
+        }
 
-    function handleFileChange(e: ChangeEvent<HTMLInputElement>): void {
-        throw new Error("Function not implemented.")
-    }
-    const handleImport=()=>{
+        setIsImport(false); // Đóng dialog chọn file ngay lập tức
+        setUploading(true); // Mở dialog tiến trình
+        setProgress(0);
+        setErrorRows([]);
+        setSelectedFile(null);
+        // setFileIdForTracking(null);
 
+        // Khởi tạo toastId ở đây
+        let uploadToastId = toast.loading('Đang tải file lên server...');
+        let progressToastId: string | number | undefined;
+        try {
+            // --- BƯỚC 1: UPLOAD FILE TẠM THỜI LÊN SERVER ---
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            const resUpload = await axios.post(API_ENDPOINTS.ADMIN.UPLOADFILE, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    // 'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const fileId = resUpload.data.fileId;
+            // setFileIdForTracking(fileId);
+            // Cập nhật toast upload thành công
+            toast.update(uploadToastId, {
+                render: `Tải file "${selectedFile.name}" thành công! Bắt đầu xử lý...`,
+                type: 'success',
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            // --- BƯỚC 2: KÍCH HOẠT QUÁ TRÌNH IMPORT BẤT ĐỒNG BỘ ---
+            progressToastId = toast.loading('Đang xử lý import file... 0%', {
+                position: 'bottom-right',
+            });
+            await axios.post(
+                API_ENDPOINTS.ADMIN.STUDENT.IMPORT,
+
+                {
+                    fileId: fileId,
+                    role: roleAdd,
+                    curriculumVersion: curriculumAdd
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        // 'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            // --- BƯỚC 3: BẮT ĐẦU POLLING TIẾN TRÌNH ---
+            const interval = setInterval(async () => {
+                try {
+                    const res = await axios.get(API_ENDPOINTS.ADMIN.PROGRESS, {
+                        params: { fileId },
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const currentProgress = res.data;
+                    setProgress(currentProgress);
+
+                    if (currentProgress < 0) { // Backend báo lỗi tổng quát (ví dụ -1)
+                        clearInterval(interval);
+                        setPollingIntervalId(null); // Clear interval ID
+                        setUploading(false);
+                        toast.update(progressToastId!, {
+                            render: "Import file thất bại do lỗi xử lý trên server.",
+                            type: 'error',
+                            isLoading: false,
+                            autoClose: 5000, // Giữ toast lỗi hiển thị
+                        });
+                        await fetchErrors(fileId);
+                    } else if (currentProgress < 100) {
+                        toast.update(progressToastId!, {
+                            render: `Đang xử lý import file... ${currentProgress}%`,
+                            // type: 'loading' giữ nguyên
+                        });
+                    } else { // currentProgress >= 100 (hoàn thành)
+                        clearInterval(interval);
+                        setPollingIntervalId(null); // Clear interval ID
+                        setUploading(false);
+                        toast.update(progressToastId!, {
+                            render: "Import file hoàn tất!",
+                            type: 'success',
+                            isLoading: false,
+                            autoClose: 5000,
+                        });
+                        await fetchErrors(fileId);
+                        fetchUser(); // Cập nhật lại dữ liệu sau khi import xong
+                    }
+                } catch (pollingErr: any) {
+                    clearInterval(interval);
+                    setPollingIntervalId(null); // Clear interval ID
+                    setUploading(false);
+                    console.error("Lỗi khi lấy tiến trình import:", pollingErr.response?.data || pollingErr);
+                    toast.update(progressToastId!, {
+                        render: "Lỗi khi lấy tiến trình import. Vui lòng kiểm tra console.",
+                        type: 'error',
+                        isLoading: false,
+                        autoClose: 5000,
+                    });
+                }
+            }, 1000);
+            setPollingIntervalId(interval); // Lưu interval ID vào state
+
+        } catch (initialErr: any) {
+            setUploading(false);
+            console.error("Lỗi trong quá trình upload/kích hoạt import:", initialErr.response?.data || initialErr);
+            toast.update(uploadToastId, { // Cập nhật toast upload với lỗi
+                render: `Import file thất bại: ${initialErr.response?.data?.message || initialErr.message || 'Lỗi không xác định'}`,
+                type: 'error',
+                isLoading: false,
+                autoClose: 5000,
+            });
+            if (progressToastId) { // Đảm bảo toast tiến trình bị đóng nếu có lỗi ở bước đầu
+                toast.dismiss(progressToastId);
+            }
+        }
+    };
+
+    // --- Hàm riêng để lấy chi tiết lỗi từ Backend ---
+    const fetchErrors = async (fileId: string) => {
+        try {
+            const errorRes = await axios.get(API_ENDPOINTS.ADMIN.GET_IMPORT_ERRO, {
+                params: { fileId },
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const backendErrorRows: ErrorRow[] = errorRes.data.erroRows;
+            setErrorRows(backendErrorRows);
+
+            if (backendErrorRows && backendErrorRows.length > 0) {
+                toast.warn(`Import hoàn tất nhưng có ${backendErrorRows.length} lỗi. Vui lòng kiểm tra chi tiết bên dưới.`);
+            }
+        } catch (err: any) {
+            console.error("Lỗi khi lấy danh sách lỗi:", err.response?.data || err);
+            toast.error("Lỗi khi lấy danh sách lỗi import.", { toastId: `fetch-errors-${fileId}` }); // Sử dụng ID động cho toast này
+        }
+    };
+    const handleDownloadErroImport = async () => {
+        try {
+            const res = await axios.post(API_ENDPOINTS.ADMIN.EXPORT_ERRO, errorRows, {
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                responseType: 'blob', //BẮT BUỘC: để axios hiểu đây là file
+            });
+
+            const blob = new Blob([res.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'userImportErro.xlsx'; // Tên file khi lưu
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url); // Giải phóng URL sau khi xong
+            toast.success("Xuất Excel thành công!"); // Sử dụng toastify
+        } catch (err: any) {
+            console.error("Lỗi khi xuất file:", err);
+            toast.error(err.response?.data?.message || "Lỗi khi xuất file"); // Sử dụng toastify
+        }
     }
+
 
     return (
         // body--------------------------------------
@@ -251,17 +457,17 @@ const StudentAdmin = () => {
                     value={searchName}
                     onChange={(e) => setSearchName(e.target.value)} />
                 <Button variant="contained"
-                    onClick={()=>{
+                    onClick={() => {
                         handleSearchClick();
-                         toast.success("okeeeeeeeeeee");
+                        toast.success("okeeeeeeeeeee");
                     }}
                 >Tìm</Button>
                 <Button variant="outlined" onClick={handleExport}>Xuất Excel</Button>
                 <Button sx={{ backgroundColor: "orangered" }} variant="contained" onClick={() => {
                     setIsAdd(true);
-                   
+
                 }}>Thêm</Button>
-                 <Button variant="contained" color="success" onClick={() => {
+                <Button variant="contained" color="success" onClick={() => {
                     setIsImport(true);
                 }}>Import</Button>
             </Box>
@@ -495,7 +701,7 @@ const StudentAdmin = () => {
                                             fullWidth margin="dense"
                                             value={mssvAdd}
                                             onChange={(e) => {
-                                              
+
                                                 const input = e.target.value;
 
                                                 // Chỉ cho phép ký tự số (0-9)
@@ -505,11 +711,11 @@ const StudentAdmin = () => {
                                                         setMssvAdd(input);
                                                         setMssvAddErro(null); // Xóa lỗi nếu có
 
-                                                       
+
                                                     } else if (input.length === 8) {
                                                         setMssvAdd(input);
                                                         checkMssvAdd(e); // Gọi kiểm tra khi đủ 8 ký tự
-                                                        }
+                                                    }
                                                     else {
                                                         // Nếu nhập quá 8 số
                                                         setMssvAdd(input.slice(0, 8));
@@ -679,6 +885,37 @@ const StudentAdmin = () => {
                                         {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
                                     </FormControl>
                                 </Box>
+                                {/* ////Role */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        margin: "10px",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <FormControl
+                                        sx={{ width: "350px", marginTop: 1 }}
+                                    >
+                                        <FormLabel id="radio-group-label">Chọn vai trò</FormLabel> {/* Nhãn cho nhóm radio */}
+                                        <RadioGroup
+                                            sx={{
+                                                display: "flex",
+                                                flexDirection: "row"
+                                            }}
+                                            aria-labelledby="radio-group-label"
+                                            name="radio-buttons-group"
+                                            value={roleAdd}
+                                            onChange={(e) => setRoleAdd(Number(e.target.value))}
+                                        >
+                                            {/* Tùy chỉnh các giá trị và nhãn cho radio button của bạn */}
+                                            <FormControlLabel value="2" control={<Radio />} label="Sinh viên" />
+                                            <FormControlLabel value="1" control={<Radio />} label="Giảng viên" />
+                                            {/* Bạn có thể thêm các FormControlLabel khác nếu cần nhiều hơn 2 giá trị */}
+                                        </RadioGroup>
+                                        {/* {isError && <FormHelperText>Vui lòng chọn một giá trị</FormHelperText>} */}
+                                    </FormControl>
+                                </Box>
                                 {/* Chương trình đào tạo */}
                                 <Box
                                     sx={{
@@ -690,7 +927,7 @@ const StudentAdmin = () => {
                                     }}
                                 >
                                     <FormControl
-                                        sx={{ width: "350px", marginTop: 2 }}
+                                        sx={{ width: "350px", marginTop: 1 }}
                                         error={isCurriculumAddErro}
                                     >
                                         <InputLabel id="year-select-label">Chương trình đào tạo</InputLabel>
@@ -715,7 +952,7 @@ const StudentAdmin = () => {
                                     sx={{
                                         display: 'flex',
                                         justifyContent: 'center',
-                                        mt: 3,
+                                        mt: 2,
                                     }}
                                 >
                                     <Button
@@ -731,11 +968,12 @@ const StudentAdmin = () => {
                                 </Box>
                             </Box>
                         </Box>
-                        
+
                     </>
                 )
             }
             {/* ////////////// */}
+            {/* Dialog Import từ file Excel */}
             <Dialog open={isImport} onClose={() => setIsImport(false)}
                 slotProps={{
                     paper: {
@@ -746,9 +984,72 @@ const StudentAdmin = () => {
                     }
                 }}
             >
-                <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Thêm User từ file Excel</DialogTitle>
+                <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Thêm user từ file Excel</DialogTitle>
                 <DialogContent>
+                    {/* ////Role */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            margin: "10px",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
+                        <FormControl
+                            sx={{ width: "350px" }}
+                        >
+                            <FormLabel id="radio-group-label">Chọn vai trò</FormLabel> {/* Nhãn cho nhóm radio */}
+                            <RadioGroup
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "row"
+                                }}
+                                aria-labelledby="radio-group-label"
+                                name="radio-buttons-group"
+                                value={roleAdd}
+                                onChange={(e) => setRoleAdd(Number(e.target.value))}
+                            >
+                                {/* Tùy chỉnh các giá trị và nhãn cho radio button của bạn */}
+                                <FormControlLabel value="2" control={<Radio />} label="Sinh viên" />
+                                <FormControlLabel value="1" control={<Radio />} label="Giảng viên" />
+                                {/* Bạn có thể thêm các FormControlLabel khác nếu cần nhiều hơn 2 giá trị */}
+                            </RadioGroup>
+                            {/* {isError && <FormHelperText>Vui lòng chọn một giá trị</FormHelperText>} */}
+                        </FormControl>
+                    </Box>
+                    {/* Chương trình đào tạo */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            margin: "10px",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+
+                        }}
+                    >
+                        <FormControl
+                            sx={{ width: "350px", marginTop: 1 }}
+                            error={isCurriculumAddErro}
+                        >
+                            <InputLabel id="year-select-label">Chương trình đào tạo</InputLabel>
+                            <Select
+                                labelId="year-select-label"
+                                value={curriculumAdd}
+                                onChange={(e) => {
+                                    setCurriculumAdd(e.target.value)
+                                    setIsCurriculumAddErro(false);
+                                }}
+                                label="Chương trình đào tạo"
+                            >
+                                <MenuItem value={"7480201_2020"}>
+                                    7480201_2020 (từ năm 2020)
+                                </MenuItem>
+                            </Select>
+                            {/* <FormHelperText>{enrollmentYearAddErro}</FormHelperText> */}
+                        </FormControl>
+                    </Box>
                     <FormControl fullWidth sx={{ mt: 2 }}>
+
                         <InputLabel shrink htmlFor="import-file-input">
                             Chọn file Excel để thêm dữ liệu
                         </InputLabel>
@@ -756,7 +1057,8 @@ const StudentAdmin = () => {
                             id="import-file-input"
                             type="file"
                             accept=".xlsx, .xls"
-                            onChange={(e) => handleFileChange(e)}
+                            onChange={handleFileChange}
+                            disabled={uploading}
                             style={{
                                 marginTop: "10px",
                                 border: "1px solid #ccc",
@@ -765,13 +1067,21 @@ const StudentAdmin = () => {
                                 backgroundColor: "#e1f7d5",
                             }}
                         />
+                        {selectedFile && (
+                            <Typography variant="body2" sx={{ mt: 1, color: 'green' }}>
+                                Đã chọn: {selectedFile.name}
+                            </Typography>
+                        )}
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setIsImport(false)}>Hủy</Button>
-                    <Button variant="contained" onClick={handleImport} >Lưu</Button>
+                    <Button onClick={() => setIsImport(false)} disabled={uploading}>Hủy</Button>
+                    <Button variant="contained" onClick={handleImport} disabled={!selectedFile || uploading}>
+                        Import
+                    </Button>
                 </DialogActions>
             </Dialog>
+
             <Dialog open={uploading} onClose={() => setUploading(false)}
                 slotProps={{
                     paper: {
@@ -782,19 +1092,74 @@ const StudentAdmin = () => {
                     }
                 }}
             >
-                <DialogTitle style={{ fontFamily: "sans-serif" }}>Đang nhập dữ liệu điểm{progress} </DialogTitle>
+                <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Đang nhập dữ liệu điểm</DialogTitle>
                 <DialogContent>
-                    {/* <Label>Đang xử lí: {progress} %</Label> */}
-                    <progress value={progress} max={100}/>
-                        
-                    {/* <LinearProgress variant="determinate" value={progress} /> */}
+                    <Box sx={{ width: '100%' }}>
+                        <LinearProgress variant="determinate" value={progress} sx={{ height: 10, borderRadius: 5 }} />
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                            {progress >= 0 ? `Đang xử lý: ${progress}%` : "Có lỗi xảy ra"}
+                        </Typography>
+                    </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setUploading(false)}>Hủy</Button>
+                    {/* Nút này chỉ đóng dialog, không dừng quá trình ở backend */}
+                    <Button onClick={() => setUploading(false)}>Đóng</Button>
                 </DialogActions>
             </Dialog>
-             
+            {/* Hiển thị bảng lỗi ở bên ngoài dialog, chỉ khi có lỗi */}
+            {errorRows.length > 0 && (
+                <Box sx={{ mt: 4, p: 2, border: '1px solid #dc3545', borderRadius: '8px', bgcolor: '#fff3f3' }}>
+                    <Typography variant="h6" component="h3" sx={{ color: '#dc3545', mb: 2, textAlign: 'center', fontFamily: 'sans-serif' }}>
+                        Chi tiết các dòng bị lỗi ({errorRows.length} lỗi):
+                    </Typography>
+                    <TableContainer component={Paper} sx={{ maxHeight: 400, overflowY: 'auto', border: '1px solid #eee' }}>
+                        <Table stickyHeader aria-label="error rows table">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: '#f8d7da' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'sans-serif' }}>Dòng</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'sans-serif' }}>Lý do lỗi</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontFamily: 'sans-serif' }}>Dữ liệu hàng</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {errorRows.map((error, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{error.rowNumber}</TableCell>
+                                        <TableCell>{error.errorReason}</TableCell>
+                                        <TableCell>{error.rowData ? error.rowData.join(', ') : 'N/A'}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Button
+                        sx={{
+                            fontFamily: 'sans-serif',
+                            ":hover": {
+                                backgroundColor: 'greenyellow',
+                                borderRadius: "15px",
+
+                            }
+                        }}
+                        onClick={handleDownloadErroImport}
+                        startIcon={<FontAwesomeIcon icon={faDownload} size="2x" color="orange" />}
+                    >Tải file</Button>
+                </Box>
+            )}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
+
         </>
+
 
         //    end Body---------------------------------
     )

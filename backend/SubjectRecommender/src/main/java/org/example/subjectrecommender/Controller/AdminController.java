@@ -148,7 +148,7 @@ public class AdminController {
     @PostMapping("/user")
     public ResponseEntity<?> addUser(@RequestBody UserAddDTO dto){
         try{
-            adminService.addUser(dto);
+            adminService.addUser(dto,dto.getRole(),dto.getCurriculumId());
             return ResponseEntity.ok("Thêm 1 user thành công ");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage()+" thêm 1 user thất bại");
@@ -236,7 +236,7 @@ public class AdminController {
     public ResponseEntity<Integer> getProgress(@RequestParam String fileId) {
         return ResponseEntity.ok(importProgressTracker.getProgress(fileId));
     }
-    @GetMapping("/scores/import/errors")
+    @GetMapping("/import/errors")
     public ResponseEntity<Map<String, Object>> getImportErrors(@RequestParam String fileId) throws IOException {
         Map<String, Object> result = new HashMap<>();
         List<ErrorRow> erroRows = importProgressTracker.getErrorRows(fileId);
@@ -245,7 +245,7 @@ public class AdminController {
         return ResponseEntity.ok(result);
 
     }
-    @PostMapping("/scores/export-erros")
+    @PostMapping("/export-erros")
     public ResponseEntity<?> exportErrors(@RequestBody List<ErrorRow> data) throws IOException {
         try {
             // Log để kiểm tra dữ liệu nhận được từ frontend
@@ -269,6 +269,24 @@ public class AdminController {
                     .badRequest()
                     .body("Export lỗi trong khi import score . Lỗi: " + e.getMessage());
         }
+    }
+    @PostMapping("/users/import")
+    public ResponseEntity<?> importUsers(
+            @RequestBody UserImportDTO userImportDTO
+    ) throws IOException {
+
+        Path path = fileStorageComponent.get(userImportDTO.getFileId());
+        System.out.println("path:"+path);
+        if (path == null || !Files.exists(path)) {
+
+            importProgressTracker.setProgress(userImportDTO.getFileId(), -1);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("File không tồn tại hoặc đã hết hạn");
+        }
+        adminService.importUser(path.toFile(),userImportDTO.getRole(),userImportDTO.getCurriculumVersion(), userImportDTO.getFileId());
+        Map<String,Object> result = new HashMap<>();
+        result.put("fileId", userImportDTO);
+        return ResponseEntity.ok(result);
     }
 
 }

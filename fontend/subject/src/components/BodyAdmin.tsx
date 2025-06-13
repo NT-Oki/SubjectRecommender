@@ -50,6 +50,7 @@ const BodyAdmin = () => {
                 <InformationAdmin />
             </Box>
             {/* endright----------------------- */}
+           
         </Box>
         //    end Body---------------------------------
     )
