@@ -188,7 +188,7 @@ public class ImportData {
             int totalRows = sheet.getLastRowNum();
             for (int i = 1; i <= totalRows; i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null ) continue;
                 UserAddDTO userAddDTO = new UserAddDTO();
                 Cell mssv_cell = row.getCell(columnIndex.get("masv"));
                 List<String> mssv_get = getValidateString(mssv_cell);
@@ -213,6 +213,7 @@ public class ImportData {
                 String name = "";
                 if (itemName.length > 1) {
                     name = itemName[itemName.length - 1];
+                    System.out.println(itemName);
                 } else {
                     name = name_get.get(0);
                 }
@@ -232,7 +233,7 @@ public class ImportData {
                 String lastName = lastName_get.get(0);
                 if (itemName.length > 1) {
                     for (int e = 0; e < itemName.length - 1; e++) {
-                        lastName += (" " + lastName_get.get(0));
+                        lastName += (" " + itemName[0]);
                     }
                 }
                 String checkLengthLastname = checkLengthString(lastName, 25);
@@ -242,12 +243,12 @@ public class ImportData {
                 }
                 userAddDTO.setLastName(lastName);
                 Cell enrollmentYear_cell = row.getCell(columnIndex.get("Khóa"));
-                List<Double> enrollmentYear_get = getValidateNumber(enrollmentYear_cell);
-                if (!(enrollmentYear_get.get(1) == 1.0)) {
-                    addErroRow(errorRows, i, row, "Lỗi không thể lấy ra năm nhập học");
+                List<String> enrollmentYear_get = getValidateString(enrollmentYear_cell);
+                if (!(enrollmentYear_get.get(1).equals("ok"))) {
+                    addErroRow(errorRows, i, row, enrollmentYear_get.get(0));
                     continue;
                 }
-                int enrollmentYear = Integer.parseInt(String.valueOf(enrollmentYear_get.get(0)));
+                int enrollmentYear = Integer.parseInt(enrollmentYear_get.get(0));
                 if (enrollmentYear < 2020 || enrollmentYear > 2025) {
                     addErroRow(errorRows, i, row, "dữ liệu năm học không nằm trong khoảng 2020-2025");
                     continue;
@@ -329,7 +330,7 @@ public class ImportData {
     }
     public String checkLengthString(String check,int size){
         if(check.length()>size){
-            return "Dữ liệu vượt quá độ dài cho phép " +size;
+            return "Dữ liệu vượt quá độ dài cho phép " +size +check;
         }
         return "ok";
     }

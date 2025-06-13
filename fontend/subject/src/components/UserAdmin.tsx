@@ -16,7 +16,7 @@ const StudentAdmin = () => {
         lastName: string;
         name: string;
         major: string;
-        enrollmentYear: number; // Lưu ý: bạn có viết sai chính tả, nên giữ nguyên hoặc sửa lại
+        enrollmentYear: number; 
     }
     interface ErrorRow {
         rowNumber: number;
@@ -200,8 +200,6 @@ const StudentAdmin = () => {
 
         }
     }
-
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -214,8 +212,6 @@ const StudentAdmin = () => {
                 // Reset trạng thái khi chọn file mới
                 setProgress(0);
                 setErrorRows([]);
-                // setFileIdForTracking(null);
-                // toast.success(`Đã chọn file: ${file.name}`); // Không cần toast này ở đây
             } else {
                 setSelectedFile(null);
                 toast.error("Vui lòng chọn file Excel hợp lệ (.xlsx hoặc .xls).");
@@ -232,13 +228,11 @@ const StudentAdmin = () => {
         setUploading(true); // Mở dialog tiến trình
         setProgress(0);
         setErrorRows([]);
-        // setFileIdForTracking(null);
+        setSelectedFile(null);
 
         // Khởi tạo toastId ở đây
         let uploadToastId = toast.loading('Đang tải file lên server...');
         let progressToastId: string | number | undefined;
-
-
         try {
             // --- BƯỚC 1: UPLOAD FILE TẠM THỜI LÊN SERVER ---
             const formData = new FormData();
@@ -247,7 +241,6 @@ const StudentAdmin = () => {
             const resUpload = await axios.post(API_ENDPOINTS.ADMIN.UPLOADFILE, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    // 'Content-Type': 'multipart/form-data',
                 },
             });
 
@@ -332,7 +325,7 @@ const StudentAdmin = () => {
                         autoClose: 5000,
                     });
                 }
-            }, 1500);
+            }, 1000);
             setPollingIntervalId(interval); // Lưu interval ID vào state
 
         } catch (initialErr: any) {
@@ -396,6 +389,7 @@ const StudentAdmin = () => {
             toast.error(err.response?.data?.message || "Lỗi khi xuất file"); // Sử dụng toastify
         }
     }
+
 
     return (
         // body--------------------------------------
