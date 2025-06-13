@@ -65,7 +65,7 @@ const ScoreAdmin = () => {
     const [searchSemester, setSearchSemester] = useState("");
     const [searchSubjectName, setSearchSubjectName] = useState("");
     const [searchStatus, setSearchStatus] = useState("");
-    const token = sessionStorage.getItem("token"); // Lấy token từ sessionStorage
+    const token = sessionStorage.getItem("token"); 
     const [scoreUpdate, setScoreUpdate] = useState<number>(-1);
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [editScoreId, setEditScoreId] = useState<number | null>(null);

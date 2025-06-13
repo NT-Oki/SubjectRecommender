@@ -16,7 +16,7 @@ const StudentAdmin = () => {
         lastName: string;
         name: string;
         major: string;
-        enrollmentYear: number; 
+        enrollmentYear: number;
     }
     interface ErrorRow {
         rowNumber: number;
@@ -85,9 +85,18 @@ const StudentAdmin = () => {
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        fetchUser();
-    }, [page, pageSize]);
+
+    
+        useEffect(() => {
+            fetchUser();
+    
+            // Cleanup function cho useEffect
+            return () => {
+                if (pollingIntervalId) {
+                    clearInterval(pollingIntervalId);
+                }
+            };
+        }, [page, pageSize, pollingIntervalId]); // Thêm pollingIntervalId vào dependency array
     const handleSearchClick = () => {
         setPage(1); // Quay về trang 1 khi tìm kiếm mới
         fetchUser();
@@ -229,6 +238,7 @@ const StudentAdmin = () => {
         setProgress(0);
         setErrorRows([]);
         setSelectedFile(null);
+        // setFileIdForTracking(null);
 
         // Khởi tạo toastId ở đây
         let uploadToastId = toast.loading('Đang tải file lên server...');
@@ -241,6 +251,7 @@ const StudentAdmin = () => {
             const resUpload = await axios.post(API_ENDPOINTS.ADMIN.UPLOADFILE, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    // 'Content-Type': 'multipart/form-data',
                 },
             });
 

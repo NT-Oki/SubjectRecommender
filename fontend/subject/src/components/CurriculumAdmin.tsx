@@ -101,11 +101,6 @@ const CurriculumAdmin = () => {
         }
     };
 
-
-    function handleAdd(): void {
-        throw new Error("Function not implemented.")
-    }
-
     return (
         // body--------------------------------------
         <>
@@ -263,7 +258,7 @@ const CurriculumAdmin = () => {
                     </Fragment>)
                 )) : null
             }
-           
+
         </>
 
         //    end Body---------------------------------
