@@ -2,6 +2,8 @@ package org.example.subjectrecommender.Repository;
 
 import jakarta.transaction.Transactional;
 import org.example.subjectrecommender.Model.RuleActive;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +18,6 @@ public interface RuleActiveRepository extends JpaRepository<RuleActive, Long> {
     @Transactional
     @Query(value = "TRUNCATE TABLE rule_actives", nativeQuery = true)
     void truncate();
+    Page<RuleActive> findAllByOrderByUtilityDesc(Pageable pageable);
+
 }

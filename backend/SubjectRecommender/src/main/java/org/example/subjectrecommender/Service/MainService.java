@@ -45,17 +45,12 @@ public class MainService {
         String outputPath = valueProperties.getFileExportTransaction();
         boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
         List<Score> allScores = scoreRepository.findAll();
-        // Bước 1: Tính tổng 'score' của từng sinh viên trong mỗi học kỳ của mỗi năm học [mssv_2021_1]
-        Map<String, Double> tempTotalScoreBySemesterContext = allScores.stream()
+        // Bước 1: Tính tổng tín chỉ của từng sinh viên trong mỗi học kỳ
+// Key: userId_year_semester, Value: tổng tín chỉ của các môn học trong học kỳ đó
+        Map<String, Integer> totalCreditsBySemesterContext = allScores.stream()
                 .collect(Collectors.groupingBy(
                         score -> score.getUser().getId() + "_" + score.getYear() + "_" + score.getSemester(),
-                        Collectors.summingDouble(Score::getScore)
-                ));
-        // tính toán tổng điếm của từng sinh viên trong 1 hki  -> [mssv_2021_1, score ]
-        Map<String, Float> totalScoreBySemesterContext = tempTotalScoreBySemesterContext.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().floatValue()
+                        Collectors.summingInt(score -> score.getSubject().getCredit()) // Đảm bảo đúng phương thức lấy tín chỉ, ví dụ getCredits()
                 ));
 
         // Bước 2: Nhóm tất cả các điểm theo User ID
@@ -112,7 +107,7 @@ public class MainService {
 
                     // Tạo khóa để lấy tổng điểm của học kỳ/năm hiện tại của sinh viên này
                     String currentContextKey = String.valueOf(userId) + "_" + semesterKey;
-                    Float totalScoreInCurrentContext = totalScoreBySemesterContext.getOrDefault(currentContextKey, 0.0f);
+                    int totalCreditInCurrentContext = totalCreditsBySemesterContext.getOrDefault(currentContextKey, 0);
 
                     for (Score score : semesterScores) {
                         if (filterPassedSubjects && score.getPassed() != 1) {
@@ -121,8 +116,8 @@ public class MainService {
 
                         // Tính utility cho môn học: điểm của môn đó / tổng điểm của học kỳ/năm rồi nhân số tín chỉ=utility/tổng điểm
                         double calculatedUtility = 0;
-                        if (totalScoreInCurrentContext > 0) {
-                            calculatedUtility = score.getUtility() / totalScoreInCurrentContext;
+                        if (totalCreditInCurrentContext > 0) {
+                            calculatedUtility = score.getUtility() / totalCreditInCurrentContext;
                         }
 
                         // Làm tròn utility và nhân hệ số để có giá trị nguyên
@@ -159,7 +154,7 @@ public class MainService {
         System.out.println("Total Lines Exported: " + totalLine);
     }
     //2
-    public void runEFIM() throws IOException {
+    public void runAglo() throws IOException {
         String inputPath= valueProperties.getFileExportTransaction();
         String outputPath= valueProperties.getFileAlgoHUSRM();
         int maxAntecedentSize= valueProperties.getMaxAntecedentSize();
