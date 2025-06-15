@@ -1,12 +1,14 @@
 package org.example.subjectrecommender.Service;
 
 import org.example.subjectrecommender.Model.CurriculumCourse;
+import org.example.subjectrecommender.Model.RuleActive;
 import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.database.ImportData;
 import org.example.subjectrecommender.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +29,8 @@ public class AdminService {
     CurriculumCourseService curriculumCourseService;
     @Autowired
     ImportData importData;
+    @Autowired
+    RuleActiveService ruleActiveService;
 
     public List<ScoreAdminDto> getAllScore() {
         return scoreService.getAll();
@@ -85,5 +89,8 @@ public class AdminService {
     }
     public void importUser(File file,int role,String curriculumVersion, String fileId) throws IOException {
         importData.importUser(file,role,curriculumVersion,fileId);
+    }
+    public Page<RuleActive> getAllRuleActive(Pageable pageable) {
+        return ruleActiveService.getRuleActiveByUtilityDesc(pageable);
     }
 }

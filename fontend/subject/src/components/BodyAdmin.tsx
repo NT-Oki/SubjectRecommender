@@ -8,6 +8,7 @@ import { Route, Routes } from "react-router-dom"
 import ScoreAdmin from "./ScoreAdmin"
 import StudentAdmin from "./UserAdmin"
 import CurriculumAdmin from "./CurriculumAdmin"
+import RuleAdmin from "./RuleAdmin"
 const BodyAdmin = () => {
     return (
         // body--------------------------------------
@@ -32,8 +33,9 @@ const BodyAdmin = () => {
             >
                 <Routes>
                     <Route path="score" element={<ScoreAdmin />} />
-                    <Route path="subject" element={<CurriculumAdmin />} />
+                    <Route path="curriculum" element={<CurriculumAdmin />} />
                     <Route path="student" element={<StudentAdmin />} />
+                    <Route path="rule" element={<RuleAdmin />} />
                 </Routes>
             </Box>
             {/* end left------------------------------------------ */}

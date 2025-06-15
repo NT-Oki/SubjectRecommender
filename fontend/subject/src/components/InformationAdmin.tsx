@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 const menuItems = [
     { id: "score", label: "Quản lý điểm" },
     { id: "student", label: "Quản lý sinh viên" },
-    { id: "subject", label: "Quản lý chương trình đào tạo" },
+    { id: "curriculum", label: "Quản lý chương trình đào tạo" },
+    { id: "rule", label: "Quản lý khai phá luật" },
 ];
 
 const InformationAdmin = () => {
@@ -41,10 +42,12 @@ const InformationAdmin = () => {
         setSelectedItem(s);
         if (s === "score") {
             navigate("/admin/score")
-        } else if (s === "subject") {
-            navigate("/admin/subject")
+        } else if (s === "curriculum") {
+            navigate("/admin/curriculum")
         } else if (s === "student") {
             navigate("/admin/student")
+        }else if (s == "rule"){
+            navigate("/admin/rule")
         }
     }
     useEffect(() => {

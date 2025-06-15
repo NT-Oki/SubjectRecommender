@@ -39,6 +39,9 @@ const API_ENDPOINTS = {
     CURRICULUM:{
       LIST: `${ADMIN_URL}/curriculum`,
       EXPORT : `${ADMIN_URL}/curriculum/export`,
+    },
+    RULE:{
+      LISTRULEACTIVE: `${ADMIN_URL}/rules`,
     }
   }
 };

@@ -1,5 +1,6 @@
 package org.example.subjectrecommender.Controller;
 
+import org.example.subjectrecommender.Model.RuleActive;
 import org.example.subjectrecommender.Service.AdminService;
 import org.example.subjectrecommender.component.FileStorageComponent;
 import org.example.subjectrecommender.component.ImportProgressTracker;
@@ -287,6 +288,27 @@ public class AdminController {
         Map<String,Object> result = new HashMap<>();
         result.put("fileId", userImportDTO);
         return ResponseEntity.ok(result);
+    }
+    @GetMapping("/rules")
+    public ResponseEntity<?> ruleActiveList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+            Pageable pageable = PageRequest.of(page, size);
+            Page<RuleActive> responseList= adminService.getAllRuleActive(pageable);
+            int total = (int)responseList.getTotalElements();
+            int fromIndex = page * size;
+            if (fromIndex >= total) {
+                return ResponseEntity.ok(Map.of("listRule", List.of(), "total", total));
+            }
+            List<RuleActive> listRule = responseList.getContent();
+            Map<String,Object> response= new HashMap<>();
+            response.put("listRule",listRule);
+            response.put("total",total);
+            response.put("page", responseList.getNumber());
+            response.put("size", responseList.getSize());
+
+            return ResponseEntity.ok(response);
     }
 
 }

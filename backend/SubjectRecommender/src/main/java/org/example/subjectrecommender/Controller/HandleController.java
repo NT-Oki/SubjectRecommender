@@ -17,15 +17,11 @@ import java.util.*;
 public class HandleController {
     @Autowired
     MainService mainService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    ValueProperties valueProperties;
 
     @PostMapping("/algo")
     public void algo() throws IOException {
         mainService.exportTransactionFile();
-        mainService.runEFIM();
+        mainService.runAglo();
         mainService.readAndSaveRules();
     }
     @GetMapping("/recommend")
