@@ -310,5 +310,50 @@ public class AdminController {
 
             return ResponseEntity.ok(response);
     }
+    @PostMapping("/rules/run")
+    public ResponseEntity<?> runAlgothirsm(@RequestBody AlgothirsmDTO dto){
+        try{
+            List<Long> list=adminService.runAlgorithmHURSM(dto.getUtilityRate(),dto.getMinConfidence());
+            Map<String, Object> response= new HashMap<>();
+            response.put("totalUtility",list.get(0));
+            response.put("totalRule",list.get(1));
+            response.put("totalSavedRule",list.get(2));
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/rules")
+    public ResponseEntity<?> transToRuleActive(){
+        try{
+            int transRule=adminService.updateRuleActive();
+            Map<String, Object> response= new HashMap<>();
+            response.put("totalRowRuleActive",transRule);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/rules/export")
+    public ResponseEntity<?> exportRuleActive(){
+        try {
+            ByteArrayInputStream excelFile = adminService.exportRuleActive();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=ruleActive" + ".xlsx");
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(new InputStreamResource(excelFile));
+        } catch (IOException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Export rule active thất bại. Lỗi: " + e.getMessage());
+        }
+    }
 
 }

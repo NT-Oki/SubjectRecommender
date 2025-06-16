@@ -18,12 +18,12 @@ public class HandleController {
     @Autowired
     MainService mainService;
 
-    @PostMapping("/algo")
-    public void algo() throws IOException {
-        mainService.exportTransactionFile();
-        mainService.runAglo();
-        mainService.readAndSaveRules();
-    }
+//    @PostMapping("/algo")
+//    public void algo() throws IOException {
+//        mainService.exportTransactionFile();
+//        mainService.runAglo();
+//        mainService.readAndSaveRules();
+//    }
     @GetMapping("/recommend")
     public ResponseEntity<?> recomendSubject(@RequestParam int semester, @RequestParam String userId, @RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "1") int size) throws IOException {
@@ -38,7 +38,7 @@ public class HandleController {
         if (start < end) {
             pagedKeys = allKeys.subList(start, end);
         }
-        Map<String, List<SubjectRecommendDTO>> pagedGroupedSuggestions = new LinkedHashMap<>(); // <-- Thay đổi ở đây
+        Map<String, List<SubjectRecommendDTO>> pagedGroupedSuggestions = new LinkedHashMap<>();
         for (String key : pagedKeys) {
             pagedGroupedSuggestions.put(key, groupedSuggestions.get(key));
         }

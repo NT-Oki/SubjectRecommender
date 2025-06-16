@@ -41,7 +41,7 @@ public class MainService {
     RuleRepository ruleRepository;
     @Autowired
     RuleActiveRepository ruleActiveRepository;
-    public void exportTransactionFile() throws IOException {
+    public long exportTransactionFile() throws IOException {
         String outputPath = valueProperties.getFileExportTransaction();
         boolean filterPassedSubjects = valueProperties.isFilterPassedSubjects();
         List<Score> allScores = scoreRepository.findAll();
@@ -152,16 +152,27 @@ public class MainService {
         valueProperties.setTotalTransaction(totalLine);
         System.out.println("Total Utility (Overall): " + totalUtilitySumOverall);
         System.out.println("Total Lines Exported: " + totalLine);
+        return totalUtilitySumOverall;
     }
     //2
-    public void runAglo() throws IOException {
+    public int runAglo(long totalUtility, double utilityRate, double minConfidence) throws IOException {
         String inputPath= valueProperties.getFileExportTransaction();
         String outputPath= valueProperties.getFileAlgoHUSRM();
         int maxAntecedentSize= valueProperties.getMaxAntecedentSize();
         int maxConsequentSize=valueProperties.getMaxConsequentSize();
         int maximumNumberOfSequences=Integer.MAX_VALUE;
-        double minUtility = valueProperties.getMinUtility();
-        double minUtilityConfidence = valueProperties.getMinUtilityConfidence();
+        double minUtility=0;
+        double minUtilityConfidence=0;
+        if(totalUtility==0L || utilityRate==0.0){
+            minUtility= valueProperties.getMinUtility();
+        }else{
+            minUtility = totalUtility*utilityRate;
+        }
+        if(minConfidence!=0.0){
+            minUtilityConfidence=minConfidence;
+        }else{
+            minUtilityConfidence = valueProperties.getMinUtilityConfidence();
+        }
 
         AlgoHUSRM algoHUSRM = new AlgoHUSRM();
         long startTime = System.currentTimeMillis();
@@ -180,10 +191,11 @@ public class MainService {
         }
         System.out.println("Tổng số luật kết hợp hữu ích được ghi ra file và đọc được: " + rulesReadFromFile.size());
         System.out.println("Luật đã được lưu vào: " + outputPath);
+        return rulesReadFromFile.size();
     }
 
     //3
-    public void readAndSaveRules() throws IOException {
+    public int readAndSaveRules() throws IOException {
         String fileAlgoHUSRM= valueProperties.getFileAlgoHUSRM();
         ruleRepository.truncate();
         List<Rule> rulesToSave = new ArrayList<>();
@@ -233,7 +245,7 @@ public class MainService {
             System.out.println("Không tìm thấy luật nào hợp lệ để lưu.");
         }
         System.out.println("Tổng số dòng luật được phân tích từ file: " + parsedRulesCount);
-
+        return parsedRulesCount;
     }
 
 
@@ -482,7 +494,7 @@ public class MainService {
         System.out.println(subjectGroupRequirementDTOList);
         return subjectGroupRequirementDTOList;
     }
-    public void transFromRuleToRuleActive(){
+    public int transFromRuleToRuleActive(){
         ruleActiveRepository.truncate();
         List<Rule> rules=ruleRepository.findAll();
         List<RuleActive> ruleActives=new ArrayList<>();
@@ -491,6 +503,7 @@ public class MainService {
         }
         ruleActiveRepository.saveAll(ruleActives);
         System.out.println("Đã chuyển dữ liệu từ Rule sang RuleActive " + ruleActives.size());
+        return ruleActives.size();
 
     }
 

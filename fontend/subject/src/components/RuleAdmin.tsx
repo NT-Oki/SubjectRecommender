@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Pagination } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Pagination, Dialog, DialogTitle, DialogContent, LinearProgress, DialogActions, Input, TextField } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -16,6 +16,7 @@ const RuleAdmin = () => {
         confidence: number;
         utility: number;
     }
+
     // const years = Array.from({ length: 2 }, (_, i) => 2020 + i);
     const token = sessionStorage.getItem("token");
     const [data, setData] = useState<RuleActive[] | []>([]);
@@ -23,8 +24,15 @@ const RuleAdmin = () => {
         const [page, setPage] = useState(1);
     const pageSize = 10;
     const [total, setTotal] = useState(0);
-    useEffect(() => {
-        const fetchUserScore = async () => {
+    const [isMiningRule, setIsMiningRule] = useState<boolean>(false);
+    const [utilityRate, setUtilityRate] = useState<number>(0.3);
+    const [minConfidence, setMinConfidence] = useState<number>(0.2);
+    const [totalUtility, setTotalUtility] = useState<number>(0);
+    const [totalRule, setTotalRule] = useState<number>(0);
+    const [totalSavedRule, setTotalSavedRule] = useState<number>(0);
+    const [numberSavedRuleActive, setNumberSavedRuleActive] = useState<number>(0);
+    // const [isMiningRule, setIsMiningRule] = useState<boolean>(false);
+    const fetchRule = async () => {
             try {
                 setIsLoading(true);
                 const response = await axios.get(API_ENDPOINTS.ADMIN.RULE.LISTRULEACTIVE, {
@@ -48,13 +56,14 @@ const RuleAdmin = () => {
             }
         };
 
-        fetchUserScore();
+       
+    useEffect(() => {
+         fetchRule();
     }, [page,pageSize]);
     const handleExport = async () => {
         try {
-            const res = await axios.get(API_ENDPOINTS.ADMIN.CURRICULUM.EXPORT, {
-                params: {
-                },
+            const res = await axios.get(API_ENDPOINTS.ADMIN.RULE.EXPORT, {
+               
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -78,6 +87,52 @@ const RuleAdmin = () => {
             alert(err.response?.data || "Lỗi khi xuất file");
         }
     };
+    const handleMining=async()=>{
+            try {
+                setIsLoading(true);
+                const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.RUN_HURSM, {
+                    utilityRate:utilityRate,
+                    minConfidence:minConfidence
+                },{
+                    
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+                );
+                console.log(response.data);
+                setTotalUtility(response.data.totalUtility);
+                setTotalRule(response.data.totalRule);
+                setTotalSavedRule(response.data.totalSavedRule);
+
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin điểm user:", error);
+            } finally {
+                setIsLoading(false);
+                
+            }
+        };
+
+         const handleSaveRule=async()=>{
+            try {
+                setIsLoading(true);
+                const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.LISTRULEACTIVE,{
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+                );
+                console.log(response.data);
+                setNumberSavedRuleActive(response.data.totalRowRuleActive);
+
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin điểm user:", error);
+            } finally {
+                setIsLoading(false);
+                fetchRule();
+            }
+        };
+    
 
     return (
         // body--------------------------------------
@@ -119,13 +174,13 @@ const RuleAdmin = () => {
                     backgroundColor:"green",
                     color:"white"
                 }}}
-                color="error" onClick={()=>{}}>Bắt đầu khai phá</Button>
+                color="error" onClick={()=>setIsMiningRule(true)}>Khai phá luật</Button>
                  <Button variant="contained"
                  sx={{fontFamily:"sans-serif",":hover":{
                     backgroundColor:"green",
                     color:"white"
                 }}}
-                color="primary" onClick={()=>{}}>Áp dụng</Button>
+                color="primary" onClick={handleSaveRule}>Áp dụng</Button>
             </Box>
 
             <Box
@@ -224,6 +279,70 @@ const RuleAdmin = () => {
                         <Typography mt={3} variant="body2" align="right">
                             Tổng số: {total} | Trang {page}/{Math.ceil(total / pageSize)}
                         </Typography>
+                         <Dialog open={isMiningRule} onClose={() => setIsMiningRule(false)} 
+                                        slotProps={{
+                                            paper: {
+                                                sx: {
+                                                    bgcolor: "#e1f7d5",
+                                                    width: "250px"
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <DialogTitle style={{ fontFamily: "sans-serif", fontWeight: "bold", textAlign: "center" }}>Khai phá luật</DialogTitle>
+                                          <TextField label="UtilityRate" name="UtilityRate" type="number" fullWidth margin="dense" value={utilityRate}
+                                           onChange={(e)=>{
+                                            const preV=utilityRate;
+                                            const value=Number(e.target.value);
+                                            if(value<=0.8 && value>=0.3){
+                                                    setUtilityRate(value);
+                                            }else{
+                                                setUtilityRate(preV);
+                                            }
+                                           }} 
+                                           slotProps={{
+                                            htmlInput:{
+                                                min:0.3,
+                                                max:0.8,
+                                                step:0.05
+                                            }
+                                           }}
+                                           
+                                           />
+                                             <TextField label="MinConfidence" name="MinConfidence" type="number" fullWidth margin="dense" value={minConfidence}
+                                           onChange={(e)=>{
+                                            const preV=utilityRate;
+                                            const value=Number(e.target.value);
+                                            if(value<=0.9 && value>=0.2){
+                                                    setMinConfidence(value);
+                                            }else{
+                                                setMinConfidence(preV);
+                                            }
+                                           }} 
+                                           slotProps={{
+                                            htmlInput:{
+                                                min:0.3,
+                                                max:0.8,
+                                                step:0.05
+                                            }
+                                           }}
+                                           
+                                           />
+                                        <DialogActions
+                                        sx={{
+                                            display:"flex",
+                                            justifyContent:"space-between"
+                                        }}
+                                        >
+                                            {/* Nút này chỉ đóng dialog, không dừng quá trình ở backend */}
+                                             <Button variant="contained" color="error" sx={{fontFamily:"sans-serif",":hover":{
+                                                backgroundColor:"orange"
+                                             }}} onClick={handleMining}>Bắt đầu</Button>
+                                            <Button sx={{":hover":{
+                                                backgroundColor:"AppWorkspace"
+                                            }}} onClick={() => setIsMiningRule(false)}>Đóng</Button>
+                                        </DialogActions>
+                                    </Dialog>
 
         </>
 
