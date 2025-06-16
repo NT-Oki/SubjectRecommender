@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Pagination, Dialog, DialogTitle, DialogContent, LinearProgress, DialogActions, Input, TextField } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Pagination, Dialog, DialogTitle, DialogActions, TextField } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -104,6 +104,10 @@ const RuleAdmin = () => {
                 setTotalUtility(response.data.totalUtility);
                 setTotalRule(response.data.totalRule);
                 setTotalSavedRule(response.data.totalSavedRule);
+                console.log(totalUtility);
+                console.log(totalRule);
+                console.log(totalSavedRule);
+                
 
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
@@ -124,6 +128,8 @@ const RuleAdmin = () => {
                 );
                 console.log(response.data);
                 setNumberSavedRuleActive(response.data.totalRowRuleActive);
+                console.log(numberSavedRuleActive);
+                
 
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
