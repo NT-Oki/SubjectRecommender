@@ -25,7 +25,7 @@ const RuleAdmin = () => {
     const pageSize = 10;
     const [total, setTotal] = useState(0);
     const [isMiningRule, setIsMiningRule] = useState<boolean>(false);
-    const [utilityRate, setUtilityRate] = useState<number>(0.3);
+    const [utilityRate, setUtilityRate] = useState<number>(0.04);
     const [minConfidence, setMinConfidence] = useState<number>(0.2);
     const [totalUtility, setTotalUtility] = useState<number>(0);
     const [totalRule, setTotalRule] = useState<number>(0);
@@ -116,7 +116,7 @@ const RuleAdmin = () => {
          const handleSaveRule=async()=>{
             try {
                 setIsLoading(true);
-                const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.LISTRULEACTIVE,{
+                const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.LISTRULEACTIVE,{},{
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -294,7 +294,7 @@ const RuleAdmin = () => {
                                            onChange={(e)=>{
                                             const preV=utilityRate;
                                             const value=Number(e.target.value);
-                                            if(value<=0.8 && value>=0.3){
+                                            if(value<=0.2 && value>=0.04){
                                                     setUtilityRate(value);
                                             }else{
                                                 setUtilityRate(preV);
@@ -302,9 +302,9 @@ const RuleAdmin = () => {
                                            }} 
                                            slotProps={{
                                             htmlInput:{
-                                                min:0.3,
-                                                max:0.8,
-                                                step:0.05
+                                                min:0.04,
+                                                max:0.2,
+                                                step:0.01
                                             }
                                            }}
                                            
@@ -321,8 +321,8 @@ const RuleAdmin = () => {
                                            }} 
                                            slotProps={{
                                             htmlInput:{
-                                                min:0.3,
-                                                max:0.8,
+                                                min:0.2,
+                                                max:0.9,
                                                 step:0.05
                                             }
                                            }}
