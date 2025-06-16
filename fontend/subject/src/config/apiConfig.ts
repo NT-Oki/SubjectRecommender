@@ -42,6 +42,8 @@ const API_ENDPOINTS = {
     },
     RULE:{
       LISTRULEACTIVE: `${ADMIN_URL}/rules`,
+      RUN_HURSM:  `${ADMIN_URL}/rules/run`,
+      EXPORT:  `${ADMIN_URL}/rules/export`,
     }
   }
 };

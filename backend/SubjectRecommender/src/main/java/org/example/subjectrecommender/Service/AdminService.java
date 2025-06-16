@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ public class AdminService {
     ImportData importData;
     @Autowired
     RuleActiveService ruleActiveService;
+    @Autowired
+    MainService mainService;
 
     public List<ScoreAdminDto> getAllScore() {
         return scoreService.getAll();
@@ -92,5 +95,21 @@ public class AdminService {
     }
     public Page<RuleActive> getAllRuleActive(Pageable pageable) {
         return ruleActiveService.getRuleActiveByUtilityDesc(pageable);
+    }
+    public List<Long> runAlgorithmHURSM(double utilityRate, double minConfidence) throws IOException {
+        List<Long> list=new ArrayList<>();
+        long totalUtility=mainService.exportTransactionFile();
+        int totalRule= mainService.runAglo(totalUtility,utilityRate,minConfidence);
+        int totalSavedRule= mainService.readAndSaveRules();
+        list.add(totalUtility);
+        list.add((long)totalRule);
+        list.add((long)totalSavedRule);
+        return list;
+    }
+    public int updateRuleActive(){
+        return mainService.transFromRuleToRuleActive();
+    }
+    public ByteArrayInputStream exportRuleActive() throws IOException {
+        return ruleActiveService.export();
     }
 }
