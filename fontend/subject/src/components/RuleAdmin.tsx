@@ -1,4 +1,4 @@
-import { Box, Typography, CircularProgress, Button, Pagination, Dialog, DialogTitle, DialogActions, TextField } from "@mui/material"
+import { Box, Typography, CircularProgress, Button, Pagination, Dialog, DialogTitle, DialogActions, TextField, Backdrop } from "@mui/material"
 import "@fontsource/quicksand/latin.css"
 import "@fontsource/roboto-serif/latin.css"
 import "@fontsource/roboto/latin.css"
@@ -31,7 +31,8 @@ const RuleAdmin = () => {
     const [totalRule, setTotalRule] = useState<number>(0);
     const [totalSavedRule, setTotalSavedRule] = useState<number>(0);
     const [numberSavedRuleActive, setNumberSavedRuleActive] = useState<number>(0);
-    // const [isMiningRule, setIsMiningRule] = useState<boolean>(false);
+    const [isMiningProcessLoading, setIsMiningProcessLoading] = useState<boolean>(false);
+    const [isActiveRule, setIsActiveRule] = useState<boolean>(false);
     const fetchRule = async () => {
             try {
                 setIsLoading(true);
@@ -89,7 +90,7 @@ const RuleAdmin = () => {
     };
     const handleMining=async()=>{
             try {
-                setIsLoading(true);
+                setIsMiningProcessLoading(true);
                 const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.RUN_HURSM, {
                     utilityRate:utilityRate,
                     minConfidence:minConfidence
@@ -112,14 +113,16 @@ const RuleAdmin = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
             } finally {
-                setIsLoading(false);
+                setIsMiningProcessLoading(false);
+                setIsMiningRule(false); 
+
                 
             }
         };
 
          const handleSaveRule=async()=>{
             try {
-                setIsLoading(true);
+                setIsActiveRule(true);
                 const response = await axios.post(API_ENDPOINTS.ADMIN.RULE.LISTRULEACTIVE,{},{
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -134,7 +137,7 @@ const RuleAdmin = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy thông tin điểm user:", error);
             } finally {
-                setIsLoading(false);
+                setIsActiveRule(false);
                 fetchRule();
             }
         };
@@ -343,12 +346,23 @@ const RuleAdmin = () => {
                                             {/* Nút này chỉ đóng dialog, không dừng quá trình ở backend */}
                                              <Button variant="contained" color="error" sx={{fontFamily:"sans-serif",":hover":{
                                                 backgroundColor:"orange"
-                                             }}} onClick={handleMining}>Bắt đầu</Button>
+                                             }}} onClick={handleMining}
+                                             disabled={isMiningProcessLoading}
+                                             > {isMiningProcessLoading ? <CircularProgress size={24} color="inherit" /> : "Bắt đầu"}</Button>
                                             <Button sx={{":hover":{
                                                 backgroundColor:"AppWorkspace"
-                                            }}} onClick={() => setIsMiningRule(false)}>Đóng</Button>
+                                            }}} onClick={() => setIsMiningRule(false)}
+                                            disabled={isMiningProcessLoading}
+                                            >Đóng</Button>
                                         </DialogActions>
                                     </Dialog>
+                                    <Backdrop
+    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+    open={isActiveRule}
+>
+    <CircularProgress color="inherit" />
+</Backdrop>
+                                   
 
         </>
 
