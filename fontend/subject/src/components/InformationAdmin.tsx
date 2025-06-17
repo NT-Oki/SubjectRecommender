@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const menuItems = [
     { id: "score", label: "Quản lý điểm" },
-    { id: "student", label: "Quản lý sinh viên" },
+    { id: "student", label: "Quản lý người dùng" },
     { id: "curriculum", label: "Quản lý chương trình đào tạo" },
     { id: "rule", label: "Quản lý khai phá luật" },
 ];

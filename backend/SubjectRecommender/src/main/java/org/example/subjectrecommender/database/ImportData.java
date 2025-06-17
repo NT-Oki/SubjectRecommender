@@ -249,8 +249,8 @@ public class ImportData {
                     continue;
                 }
                 int enrollmentYear = Integer.parseInt(enrollmentYear_get.get(0));
-                if (enrollmentYear < 2020 || enrollmentYear > 2025) {
-                    addErroRow(errorRows, i, row, "dữ liệu năm học không nằm trong khoảng 2020-2025");
+                if (enrollmentYear < 2015 || enrollmentYear > 2025) {
+                    addErroRow(errorRows, i, row, "dữ liệu năm học không nằm trong khoảng 2015-2025");
                     continue;
                 }
                 userAddDTO.setEnrollmentYear(enrollmentYear);
@@ -290,7 +290,7 @@ public class ImportData {
     public List<String> isValidSemesterFormat(String value) {//kiểm tra xem có đúng định dạng (hk1/2022-2023)
         //  hk1/2022-2023 hoặc hk2/2021-2022
         List<String> result=new ArrayList<>();//"ok","erro"
-        if(value.matches("(?i)hk[12]/\\d{4}-\\d{4}")){
+        if(value.matches("(?i)hk [12]/\\d{4}-\\d{4}")){
             result.add(value);
             result.add("ok");
         }else{
@@ -592,6 +592,12 @@ public class ImportData {
     }
     public ByteArrayInputStream  exportErrorRowsToExcel(List<ErrorRow> errorRows) throws IOException {
         String outputPath = valueProperties.getPathFileExportScoreErro();
+        File file = new File(outputPath);
+        if (file.exists()) {
+            file.delete();
+        } else {
+            file.getParentFile().mkdirs(); // tạo thư mục nếu chưa có
+        }
         try(Workbook workbook = new XSSFWorkbook();
             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("ErrorRows");
@@ -622,7 +628,9 @@ public class ImportData {
                 sheet.autoSizeColumn(i);
             }
             workbook.write(out);
-
+            try (FileOutputStream fileOut = new FileOutputStream(outputPath)) {
+                workbook.write(fileOut);
+            }
             workbook.close();
             return new ByteArrayInputStream(out.toByteArray());
         }
